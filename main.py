@@ -1,19 +1,8 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
 from http import HTTPStatus
-import socket
+import asyncio
+import inspect
 import signal
 import os
-
-# grug route brain
-routes = {}
-
-
-def route(method, path):
-	def decorator(fn):
-		routes[(method.upper(), path)] = fn
-		return fn
-
-	return decorator
 
 
 # --- grug response helpers ---
@@ -27,86 +16,108 @@ def empty():
 	return "", HTTPStatus.NO_CONTENT, None
 
 
+# --- grug app ---
+
+
+class App:
+	def __init__(self):
+		self._routes = {}
+
+	def get(self, path):    return self._add("GET", path)
+	def post(self, path):   return self._add("POST", path)
+	def put(self, path):    return self._add("PUT", path)
+	def delete(self, path): return self._add("DELETE", path)
+
+	def _add(self, method, path):
+		def decorator(fn):
+			self._routes[(method, path)] = fn
+			return fn
+		return decorator
+
+	def run(self, host="127.0.0.1", port=8080, sock=None):
+		asyncio.run(self._serve(host, port, sock))
+
+	async def _serve(self, host, port, sock):
+		routes = self._routes  # close over — handler sees routes, nothing else does
+
+		async def handle(reader, writer):
+			try:
+				line = await reader.readline()
+				parts = line.decode().split()
+				if len(parts) < 2:
+					return
+				method, path = parts[0], parts[1]
+
+				# drain headers — grug not need them yet
+				while True:
+					if await reader.readline() in (b"\r\n", b"\n", b""):
+						break
+
+				fn = routes.get((method, path))
+				if fn is None:
+					await _send(writer, "grug not know this path", HTTPStatus.NOT_FOUND, "text/plain")
+					return
+
+				result = fn()
+				if inspect.isawaitable(result):  # async fn? grug await. sync fn? grug not bother
+					result = await result
+				await _send(writer, *result)
+
+			finally:
+				writer.close()
+				await writer.wait_closed()
+
+		if sock:
+			if os.name == "nt":
+				raise OSError("grug on windows — unix socket not available, use host+port instead")
+			if os.path.exists(sock):
+				os.unlink(sock)
+			server = await asyncio.start_unix_server(handle, path=sock)
+			os.chmod(sock, 0o660)  # grug protect socket — note: silently ignored on windows
+			print(f"grug listen on unix:{sock}")
+		else:
+			server = await asyncio.start_server(handle, host, port)
+			print(f"grug listen on http://{host}:{port}")
+
+		# SIGTERM: nginx/docker use this — without it, unix socket left behind like mammoth bone
+		if hasattr(signal, "SIGTERM"):
+			signal.signal(signal.SIGTERM, lambda *_: server.close())
+
+		async with server:
+			await server.serve_forever()
+
+
+async def _send(writer, body_text, status, content_type):
+	body = body_text.encode()
+	header = f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
+	if content_type:
+		header += f"Content-Type: {content_type}\r\n"
+	header += "\r\n"
+	writer.write(header.encode() + body)
+	await writer.drain()
+
+
 # --- grug routes ---
 
 
-@route("GET", "/")
+app = App()
+
+
+@app.get("/")
 def index():
 	return html("<h1>grug server</h1>")
 
 
-@route("GET", "/club")
-def club():
+@app.get("/club")
+async def club():                          # async, grug can now go hunt while waiting
+	await asyncio.sleep(0)                 # pretend grug fetch mammoth from database
 	return html("<h1>grug club very heavy</h1>")
 
 
-@route("POST", "/club")
-def smash_club():
+@app.post("/club")
+async def smash_club():
 	return empty()
 
 
-# --- boring server stuff, grug rarely touch ---
-
-
-class GrugHandler(BaseHTTPRequestHandler):
-	def handle_any(self):
-		handler_fn = routes.get((self.command, self.path))
-		if handler_fn is None:
-			send_response(
-				self, HTTPStatus.NOT_FOUND, "grug not know this path", "text/plain"
-			)
-			return
-		body, status, content_type = handler_fn()
-		send_response(self, status, body, content_type)
-
-	def do_GET(self):
-		self.handle_any()
-
-	def do_POST(self):
-		self.handle_any()
-
-	def log_message(self, format, *args):
-		pass
-
-
-def send_response(handler, status, body_text, content_type):
-	body = body_text.encode()
-	handler.send_response(status)
-	if content_type:
-		handler.send_header("Content-Type", content_type)
-	handler.send_header("Content-Length", len(body))
-	handler.end_headers()
-	handler.wfile.write(body)
-
-
-class UnixServer(HTTPServer):
-	address_family = socket.AF_UNIX
-
-	def server_close(self):
-		super().server_close()
-		os.unlink(self.server_address)  # clean up socket file
-
-
-def run_server(host="127.0.0.1", port=8080, path=None):
-	# grug smart - pick server type from arguments
-	if path:
-		if os.path.exists(path):
-			os.unlink(path)
-		server = UnixServer(path, GrugHandler)
-		os.chmod(path, 0o660)  
-		# grug protect socket from strangers
-		print(f"grug listen on unix:{path}")
-	else:
-		server = HTTPServer((host, port), GrugHandler)
-		print(f"grug listen on http://{host}:{port}")
-
-	# signal reason: Ctrl+C (SIGINT) fine without this
-	# but nginx/docker send SIGTERM to stop server - that one skips cleanup!
-	# without this, unix socket file left behind like mammoth bone
-	signal.signal(signal.SIGTERM, lambda *_: server.shutdown())
-
-	server.serve_forever()  # already handles Ctrl+C cleanly
-
-
-run_server()
-# run_server(path="/tmp/grug.sock")")")
+app.run()
+# app.run(sock="/tmp/grug.sock")
