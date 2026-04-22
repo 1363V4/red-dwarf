@@ -17,7 +17,20 @@ app = App()
 def index(_request):
 	# `_request` is accepted for consistency with all handlers.
 	# This route ignores request details and returns static HTML.
-	return html("<h1>grug server</h1>")
+	return html('''
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<link rel="icon" href="/static/img/red_dwarf.png"/>
+    <link rel="stylesheet" href="/static/css/index.css"/>
+	<script type="module" src="/static/js/datastar.js"></script>
+</head>
+<body class="gc">
+...
+</body>
+</html>
+''')
 
 
 @app.get("/club")

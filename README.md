@@ -155,6 +155,8 @@ Go to localhost and watch the dwarf count time!
 #### Attributes
 #### app.run()
 
+> run(self, host="127.0.0.1", port=8080, sock=None, reload=False)
+
 ### Input
 
 #### Attributes
@@ -178,3 +180,27 @@ Answer.
 **Can I use sync functions?**
 
 No. Everything in RD is async by default.
+
+**Can I respond with json?**
+
+No.
+
+**Why is there no compression?**
+
+We let the reverse proxy do it.
+
+**Why is there no static files?**
+
+We let the reverse proxy do it,
+and the browser cache them with etags.
+
+**But why?**
+
+Just like everybody needs a frontend framework (like Datastar),
+everybody needs a reverse proxy.
+So more people work on them,
+which means they're likely better.
+
+We do the absolute minimum at the Python level
+and let Caddy's Go code and Chrome's C++
+do the heavy lifting.
