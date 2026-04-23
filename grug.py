@@ -94,7 +94,10 @@ class App:
 
     def run(self, host="127.0.0.1", port=8080, sock=None):
         """Synchronous entry point for running the async server."""
-        asyncio.run(self._serve(host, port, sock))
+        try:
+            asyncio.run(self._serve(host, port, sock))
+        except KeyboardInterrupt:
+            print("grug: out.")
 
     async def _serve(self, host, port, sock):
         # Close over route table to avoid repeated attribute lookups.
