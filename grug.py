@@ -3,6 +3,9 @@ import inspect
 import mimetypes
 import os
 import signal
+import sys
+import threading
+import time
 from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -57,6 +60,35 @@ class Request:
         return self.body.decode("utf-8", errors="replace")
 
 
+# App starts here
+
+
+def _watch_and_restart():
+    """
+    Restart the process when any loaded .py file or static asset changes.
+    grug asked claude if can do with asyncio, but claude said threading better.
+    """
+    mtimes = {}
+
+    def iter_watched_files():
+        yield from Path.cwd().glob("*.py")
+        yield from Path("static").glob("**/*")
+
+    while True:
+        for file_path in iter_watched_files():
+            try:
+                mtime = file_path.stat().st_mtime
+            except OSError:
+                continue
+            key = str(file_path.resolve())
+            if key not in mtimes:
+                mtimes[key] = mtime
+            elif mtime > mtimes[key]:
+                print(f"grug see change in {file_path}, restarting...")
+                os.execv(sys.executable, [sys.executable] + sys.argv)
+        time.sleep(1)
+
+
 class App:
     """
     Minimal async HTTP app.
@@ -92,8 +124,11 @@ class App:
 
         return decorator
 
-    def run(self, host="127.0.0.1", port=8080, sock=None):
+    def run(self, host="127.0.0.1", port=8080, sock=None, reload=False):
         """Synchronous entry point for running the async server."""
+        if reload:
+            t = threading.Thread(target=_watch_and_restart, daemon=True)
+            t.start()
         try:
             asyncio.run(self._serve(host, port, sock))
         except KeyboardInterrupt:

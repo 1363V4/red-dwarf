@@ -1,11 +1,10 @@
-@import url('gold.css');
-
+@import url("gold.css");
 
 :root {
-	--black: #1c1c1c;
-	--white: #ffffff80;
-	--red: #f33535;
-	--blue: #2936f2;
+    --black: #1c1c1c;
+    --white: #ffffff80;
+    --red: #f33535;
+    --blue: #2936f2;
 }
 
 body {

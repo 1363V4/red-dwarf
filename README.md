@@ -153,6 +153,11 @@ Go to localhost and watch the dwarf count time!
 ### App
 
 #### Attributes
+
+reload
+
+just the python files and the static folder
+
 #### app.run()
 
 > run(self, host="127.0.0.1", port=8080, sock=None, reload=False)
