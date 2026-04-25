@@ -12,18 +12,33 @@ from urllib.parse import parse_qs, urlsplit
 
 
 # --- small response helpers ---
-#
-# Every handler returns a 3-tuple:
-#   (body_text, status, content_type)
-#
-# Keeping this shape tiny and explicit makes the server easy to reason about.
-def html(body, status=HTTPStatus.OK):
-    """Return an HTML response tuple."""
-    return body, status, "text/html"
+def cookie(
+    key,
+    value,
+    path="/",
+    max_age=None,
+    secure=True,       
+    httponly=True,
+    samesite="Lax"     
+):
+    parts = [f"{key}={value}", f"Path={path}"]
+
+    if max_age is not None:
+        parts.append(f"Max-Age={max_age}")
+    if secure:
+        parts.append("Secure")
+    if httponly:
+        parts.append("HttpOnly")
+    if samesite:
+        parts.append(f"SameSite={samesite}")
+
+    return ("Set-Cookie", "; ".join(parts))
+
+def html(body, status=HTTPStatus.OK, headers=None):
+    return (body, status, "text/html", headers or [])
 
 
 def empty():
-    """Return a 204 No Content response tuple."""
     return "", HTTPStatus.NO_CONTENT, None
 
 
@@ -39,6 +54,10 @@ class Request:
     - query dict where values are lists (same as urllib.parse.parse_qs)
     - headers as a lowercase-key dict
     - raw body bytes
+    ...
+    meh
+    you are the only stateful focker aren't you
+    we'll take care of you later
     """
 
     def __init__(self, method, raw_path, path, query, headers, body):
@@ -90,15 +109,6 @@ def _watch_and_restart():
 
 
 class App:
-    """
-    Minimal async HTTP app.
-
-    Design goals:
-    - tiny API surface
-    - easy to read and hack on
-    - enough structure to grow incrementally
-    """
-
     def __init__(self):
         # Route table key: (METHOD, PATH) -> handler function.
         self._routes = {}
