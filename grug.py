@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import json
 import mimetypes
 import os
 import signal
@@ -13,13 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 
 # --- small response helpers ---
 def cookie(
-    key,
-    value,
-    path="/",
-    max_age=None,
-    secure=True,       
-    httponly=True,
-    samesite="Lax"     
+    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
 ):
     parts = [f"{key}={value}", f"Path={path}"]
 
@@ -34,12 +29,28 @@ def cookie(
 
     return ("Set-Cookie", "; ".join(parts))
 
+
 def html(body, status=HTTPStatus.OK, headers=None):
     return (body, status, "text/html", headers or [])
 
 
 def empty():
     return "", HTTPStatus.NO_CONTENT, None
+
+
+# request
+
+
+def _read_signals(method, headers, params, body):
+    if "datastar-request" not in headers:
+        return {}
+    if method in ("GET", "DELETE"):
+        data = params.get("datastar")
+    elif headers.get("content-type") == "application/json":
+        data = body.decode("utf-8", errors="replace")
+    else:
+        return {}
+    return json.loads(data) if data else {}
 
 
 class Request:
@@ -58,6 +69,8 @@ class Request:
     meh
     you are the only stateful focker aren't you
     we'll take care of you later
+    ...
+    slots?
     """
 
     def __init__(self, method, raw_path, path, query, headers, body):
@@ -67,6 +80,7 @@ class Request:
         self.query = query
         self.headers = headers
         self.body = body
+        self.signals = _read_signals(method, headers, query, body)
 
     @property
     def text(self):
@@ -253,7 +267,12 @@ async def _read_request(reader):
     method, raw_path = parts[0], parts[1]
     split = urlsplit(raw_path)
     path = split.path or "/"
-    query = parse_qs(split.query, keep_blank_values=True)
+
+    # willkommen... hmmmmmmmmmmmmmmmm
+    # false? yes
+    # query = parse_qs(split.query, keep_blank_values=True)
+    query = parse_qs(split.query)
+    # query = {k: v[0] if len(v) == 1 else v for k, v in query.items()}
 
     # Read headers until the blank separator line.
     headers = {}
