@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import json
 import mimetypes
 import os
@@ -7,6 +6,7 @@ import signal
 import sys
 import threading
 import time
+import traceback
 from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -35,13 +35,14 @@ def html(body, status=HTTPStatus.OK, headers=None):
 
 
 def empty():
-    return "", HTTPStatus.NO_CONTENT, None
+    return "", HTTPStatus.NO_CONTENT, None, []
 
 
 # request
 
 
 def _read_signals(method, headers, params, body):
+    # meh, not a fan of the control flow
     if "datastar-request" not in headers:
         return {}
     if method in ("GET", "DELETE"):
@@ -70,37 +71,29 @@ class Request:
     you are the only stateful focker aren't you
     we'll take care of you later
     ...
-    slots?
+    slots? why not
+    en fait property ça permet avec le decorator de mettre un docstring facile
+    on valide ou pas ?
     """
 
     def __init__(self, method, raw_path, path, query, headers, body):
         self.method = method
-        self.raw_path = raw_path
-        self.path = path
         self.query = query
         self.headers = headers
         self.body = body
         self.signals = _read_signals(method, headers, query, body)
-
-    @property
-    def text(self):
-        """
-        Decode body as UTF-8 text.
-
-        `errors="replace"` avoids exceptions for malformed bytes and keeps
-        the server behavior stable.
-        """
-        return self.body.decode("utf-8", errors="replace")
+        # sus values
+        self.text = self.body.decode("utf-8", errors="replace")
+        self.raw_path = raw_path
+        self.path = path
+        # self.regex = {'id': str, ...}
+        # pas de raison que le delimiter soit autre chose que /
 
 
 # App starts here
 
 
 def _watch_and_restart():
-    """
-    Restart the process when any loaded .py file or static asset changes.
-    grug asked claude if can do with asyncio, but claude said threading better.
-    """
     mtimes = {}
 
     def iter_watched_files():
@@ -118,133 +111,40 @@ def _watch_and_restart():
                 mtimes[key] = mtime
             elif mtime > mtimes[key]:
                 print(f"grug see change in {file_path}, restarting...")
+                # argv not used at the moment
                 os.execv(sys.executable, [sys.executable] + sys.argv)
         time.sleep(1)
 
 
-class App:
-    def __init__(self):
-        # Route table key: (METHOD, PATH) -> handler function.
-        self._routes = {}
+# ROUTING / APP STARTS HERE
 
-    def get(self, path):
-        return self._add("GET", path)
+_routes = {}
 
-    def post(self, path):
-        return self._add("POST", path)
 
-    def put(self, path):
-        return self._add("PUT", path)
+def _add(method, path):
+    """Decorator used by get/post/put/delete."""
 
-    def delete(self, path):
-        return self._add("DELETE", path)
+    def decorator(fn):
+        _routes[(method, path)] = fn
+        return fn
 
-    def _add(self, method, path):
-        """Decorator used by get/post/put/delete."""
+    return decorator
 
-        def decorator(fn):
-            self._routes[(method, path)] = fn
-            return fn
 
-        return decorator
+def get(path):
+    return _add("GET", path)
 
-    def run(self, host="127.0.0.1", port=8080, sock=None, reload=False):
-        """Synchronous entry point for running the async server."""
-        if reload:
-            t = threading.Thread(target=_watch_and_restart, daemon=True)
-            t.start()
-        try:
-            asyncio.run(self._serve(host, port, sock))
-        except KeyboardInterrupt:
-            print("grug: out.")
 
-    async def _serve(self, host, port, sock):
-        # Close over route table to avoid repeated attribute lookups.
-        routes = self._routes
+def post(path):
+    return _add("POST", path)
 
-        async def handle(reader, writer):
-            """
-            Single-connection request handler.
 
-            This implementation handles one request per connection and then closes
-            the socket. It does not attempt keep-alive reuse.
-            """
-            try:
-                request = await _read_request(reader)
-                if request is None:
-                    # Empty or malformed request line; close quietly.
-                    return
+def put(path):
+    return _add("PUT", path)
 
-                fn = routes.get((request.method, request.path))
 
-                if fn is None:
-                    candidate = Path("static") / request.path.removeprefix("/static/")
-                    candidate = candidate.resolve()
-                    if (
-                        request.method == "GET"
-                        and candidate.is_relative_to(Path("static").resolve())
-                        and candidate.is_file()
-                    ):
-                        mime, _ = mimetypes.guess_type(candidate.name)
-                        body = candidate.read_bytes()
-                        writer.write(
-                            f"HTTP/1.1 200 OK\r\nContent-Length: {len(body)}\r\nContent-Type: {mime or 'application/octet-stream'}\r\n\r\n".encode()
-                            + body
-                        )
-                        await writer.drain()
-                    else:
-                        await _send(
-                            writer,
-                            "grug not know this path",
-                            HTTPStatus.NOT_FOUND,
-                            "text/plain",
-                        )
-                    return
-
-                # Handlers can be sync or async.
-                # If async, await; if sync, use value directly.
-                result = fn(request)
-                if inspect.isawaitable(result):
-                    result = await result
-
-                await _send(writer, *result)
-
-            except Exception:
-                # Tiny but important safety net:
-                # convert unexpected exceptions into a controlled 500 response.
-                await _send(
-                    writer,
-                    "grug make accident",
-                    HTTPStatus.INTERNAL_SERVER_ERROR,
-                    "text/plain",
-                )
-            finally:
-                writer.close()
-                await writer.wait_closed()
-
-        # Bind either to a Unix domain socket or a TCP host/port.
-        if sock:
-            if os.name == "nt":
-                raise OSError(
-                    "grug on windows — unix socket not available, use host+port instead"
-                )
-            if os.path.exists(sock):
-                # Remove stale socket file left by previous unclean shutdown.
-                os.unlink(sock)
-            server = await asyncio.start_unix_server(handle, path=sock)
-            os.chmod(sock, 0o660)
-            print(f"grug listen on unix:{sock}")
-        else:
-            server = await asyncio.start_server(handle, host, port)
-            print(f"grug listen on http://{host}:{port}")
-
-        # SIGTERM is common in containers/process managers.
-        # Closing the server lets `serve_forever()` exit cleanly.
-        if hasattr(signal, "SIGTERM"):
-            signal.signal(signal.SIGTERM, lambda *_: server.close())
-
-        async with server:
-            await server.serve_forever()
+def delete(path):
+    return _add("DELETE", path)
 
 
 async def _read_request(reader):
@@ -268,11 +168,7 @@ async def _read_request(reader):
     split = urlsplit(raw_path)
     path = split.path or "/"
 
-    # willkommen... hmmmmmmmmmmmmmmmm
-    # false? yes
-    # query = parse_qs(split.query, keep_blank_values=True)
     query = parse_qs(split.query)
-    # query = {k: v[0] if len(v) == 1 else v for k, v in query.items()}
 
     # Read headers until the blank separator line.
     headers = {}
@@ -289,22 +185,18 @@ async def _read_request(reader):
         headers[name.strip().lower()] = value.strip()
 
     # Read request body if Content-Length is present and valid.
-    content_length = 0
-    length_value = headers.get("content-length")
-    if length_value:
-        try:
-            content_length = int(length_value)
-        except ValueError:
-            content_length = 0
-
     body = b""
-    if content_length > 0:
-        body = await reader.readexactly(content_length)
+    try:
+        content_length = int(headers.get("content-length", 0))
+        if content_length > 0:
+            body = await reader.readexactly(content_length)
+    except ValueError:
+        pass
 
     return Request(method, raw_path, path, query, headers, body)
 
 
-async def _send(writer, body_text, status, content_type):
+async def _send(writer, body_text, status, content_type, headers):
     """
     Write a minimal HTTP response to the stream.
 
@@ -319,3 +211,96 @@ async def _send(writer, body_text, status, content_type):
     header += "\r\n"
     writer.write(header.encode("utf-8") + body)
     await writer.drain()
+
+
+async def _serve(host, port, sock):
+    async def handle(reader, writer):
+        """
+        Single-connection request handler.
+
+        This implementation handles one request per connection and then closes
+        the socket. It does not attempt keep-alive reuse.
+        """
+        try:
+            request = await _read_request(reader)
+            if request is None:
+                return
+
+            handler = _routes.get((request.method, request.path))
+
+            if handler is None:  # unknown route, try static and if not return 500
+                candidate = Path("static") / request.path.removeprefix("/static/")
+                candidate = candidate.resolve()
+                if (
+                    request.method == "GET"
+                    and candidate.is_relative_to(Path("static").resolve())
+                    and candidate.is_file()
+                ):
+                    mime, _ = mimetypes.guess_type(candidate.name)
+                    body = candidate.read_bytes()
+                    writer.write(
+                        f"HTTP/1.1 200 OK\r\nContent-Length: {len(body)}\r\nContent-Type: {mime or 'application/octet-stream'}\r\n\r\n".encode()
+                        + body
+                    )
+                    await writer.drain()
+                else:
+                    await _send(
+                        writer,
+                        "grug not know this path",
+                        HTTPStatus.NOT_FOUND,
+                        "text/plain",
+                        [],
+                    )
+                return
+
+            response = await handler(request)
+            await _send(writer, *response)
+
+        except Exception as e:
+            print(f"grug had problem: {e}")
+            traceback.print_exc()
+            await _send(
+                writer,
+                "grug make accident",
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                "text/plain",
+                [],
+            )
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    # Bind either to a Unix domain socket or a TCP host/port.
+    if sock:
+        if os.name == "nt":
+            raise OSError(
+                "grug on windows — unix socket not available, use host+port instead"
+            )
+        if os.path.exists(sock):
+            # Remove stale socket file left by previous unclean shutdown.
+            os.unlink(sock)
+        server = await asyncio.start_unix_server(handle, path=sock)
+        os.chmod(sock, 0o660)
+        print(f"grug listen on unix:{sock}")
+    else:
+        server = await asyncio.start_server(handle, host, port)
+        print(f"grug listen on http://{host}:{port}")
+
+    # SIGTERM is common in containers/process managers.
+    # Closing the server lets `serve_forever()` exit cleanly.
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, lambda *_: server.close())
+
+    async with server:
+        await server.serve_forever()
+
+
+def run(host="127.0.0.1", port=8080, sock=None, reload=False):
+    """Synchronous entry point for running the async server."""
+    if reload:
+        t = threading.Thread(target=_watch_and_restart, daemon=True)
+        t.start()
+    try:
+        asyncio.run(_serve(host, port, sock))
+    except KeyboardInterrupt:
+        print("grug: out.")

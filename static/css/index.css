@@ -12,3 +12,8 @@ body {
     color: var(--white);
     font-family: system-ui;
 }
+
+.button {
+    background: var(--blue);
+    cursor: pointer;
+}

@@ -1,22 +1,17 @@
-import asyncio
+import grug as rd
 
-# Keep `main.py` as demo website only.
-# The reusable server core now lives in `grug.py`.
-from grug import App, empty, html
-
-# --- demo website routes ---
-#
-# This file is intentionally focused on "site behavior":
-# route handlers, fake business logic, startup defaults.
-# It should stay small and readable for quick experiments.
-app = App()
+# import redwarf as rd
+# @rd.get("/")
+# rd.run()
+# 1 seul objet stateful la request, tout le reste en fonctionnel
+# non app doit être stateful pour au moins avoir les routes non? bof en vrai, quand tu call run
+# no import
+# async
 
 
-@app.get("/")
-def index(_request):
-    # `_request` is accepted for consistency with all handlers.
-    # This route ignores request details and returns static HTML.
-    return html("""
+@rd.get("/")
+def index(request):
+    return rd.html("""
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
@@ -26,35 +21,26 @@ def index(_request):
 	<script type="module" src="/static/js/datastar.js"></script>
 </head>
 <body class="gc">
-<p data-text="$name"></p>
-<p data-text="$name"></p>
-<input type=text name=name data-bind:name></input>
+    <h1 class="gt-xl">red dwarf</h1>
+    <img src="/static/img/red_dwarf.png"/>
+    <p>Type to see your grug name</p>
+    <input type=text name=name data-bind:name data-on:input="@post('/club')"></input>
+    <div>Your grug name is <p id=username></p></div>
 </body>
 </html>
 """)
 
 
-@app.get("/club")
-async def club(_request):
-    # Async handler demo:
-    # pretend we are waiting for database / API work.
-    await asyncio.sleep(0)
-    return html("<h1>grug club very heavy</h1>")
-
-
-@app.post("/club")
+@rd.post("/club")
 async def smash_club(request):
-    # Body access demo:
-    # if user sends text body, we can inspect it via `request.text`.
-    #
-    # We keep behavior tiny for now and always return 204.
-    _ = request.text
-    return empty()
+    name = request.signals.get("name")
+    if name:
+        # we should use html.escape one day
+        return rd.html(f"<p id=username>GRUG {name}</p>")
+    else:
+        return rd.empty()
 
 
 if __name__ == "__main__":
-    # Import-safe startup:
-    # the server runs only when this file is executed directly.
-    # This makes tests/imports simpler and avoids accidental startup.
-    app.run(reload=True)
+    rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")

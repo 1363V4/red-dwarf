@@ -9,9 +9,9 @@ Red Dwarf is a very minimal and very opinionated Python ASGI server.
 Red Dwarf:
 
 - only use the Python default library
-- is fast
-- has sensible helper functions
-- is decently secure
+- is fast?
+- has sensible helper functions / looks familiar
+- is decently secure?
 - gets you running in seconds
 
 ### Why Red Dwarf?
@@ -32,6 +32,9 @@ so you can write your Python however you see fit.
 ### How to use Red Dwarf?
 
 Simply run `uv add red-dwarf` to your project to get going.
+
+Note: You need Python minimum version ?????????????????????
+
 Then, head over to [Quickstart](#quickstart)
 
 ### When not to use Red Dwarf?
@@ -148,33 +151,32 @@ Now we just need to add the SSE route:
 
 Go to localhost and watch the dwarf count time!
 
-## Reference
+## Usage behing a reverse proxy
 
-### App
+...
 
-#### Attributes
+## The rest of the backend
 
-reload
+### Database
 
-just the python files and the static folder
+We like SQLITE and TINYDB
 
-#### app.run()
+### Pubsub
 
-> run(self, host="127.0.0.1", port=8080, sock=None, reload=False)
+We like REDIS and NATS
 
-### Input
+### HTML generation
 
-#### Attributes
-#### i.cookies()
-#### i.signals()
+We like what Stario and are waiting for t-strings
 
-### Output
+### Telemetry
 
-#### Attributes
-#### o.html()
-#### o.empty()
-#### o.alive()
-#### o.patch()
+We like LOGGER
+
+### BG tasks
+
+We like ASYNCIO
+but are waiting for free threading
 
 ## FAQ
 
@@ -189,6 +191,18 @@ No. Everything in RD is async by default.
 **Can I respond with json?**
 
 No.
+
+**Is there type matching on regex routes?**
+
+No, they're strings.
+
+**How can I debug?**
+
+We recommend using `print()`.
+
+**Can I add routes at runtime?**
+
+Well you can change your code and the server will restart, but... why do that?
 
 **Why is there no compression?**
 
