@@ -10,7 +10,7 @@ import grug as rd
 
 
 @rd.get("/")
-def index(request):
+async def index(request):
     return rd.html("""
 <html lang="en">
 <head>

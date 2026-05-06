@@ -2,11 +2,13 @@ import asyncio
 import json
 import mimetypes
 import os
+import re
 import signal
 import sys
 import threading
 import time
 import traceback
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -54,40 +56,35 @@ def _read_signals(method, headers, params, body):
     return json.loads(data) if data else {}
 
 
+@dataclass(slots=True)
 class Request:
     """
-    Tiny request container.
-
-    This is intentionally not a full-featured request object. It only stores
-    the small amount of data that this toy server can currently parse:
-    - HTTP method
-    - raw path
-    - parsed path without query string
-    - query dict where values are lists (same as urllib.parse.parse_qs)
-    - headers as a lowercase-key dict
-    - raw body bytes
-    ...
-    meh
-    you are the only stateful focker aren't you
-    we'll take care of you later
-    ...
-    slots? why not
     en fait property ça permet avec le decorator de mettre un docstring facile
     on valide ou pas ?
     """
 
-    def __init__(self, method, raw_path, path, query, headers, body):
-        self.method = method
-        self.query = query
-        self.headers = headers
-        self.body = body
-        self.signals = _read_signals(method, headers, query, body)
-        # sus values
-        self.text = self.body.decode("utf-8", errors="replace")
-        self.raw_path = raw_path
-        self.path = path
-        # self.regex = {'id': str, ...}
-        # pas de raison que le delimiter soit autre chose que /
+    method: str
+    raw_path: str
+    path: str
+    query: dict
+    headers: dict
+    body: bytes  # str?
+    signals: dict = field(default_factory=dict)  # obligé ?
+    params: dict = field(default_factory=dict)
+
+    # def __init__(self, method, raw_path, path, query, headers, body):
+    #     self.method = method
+    #     self.query = query
+    #     self.headers = headers
+    #     self.body = body
+    #     self.signals = _read_signals(method, headers, query, body)
+    #     # sus values
+    #     self.text = self.body.decode("utf-8", errors="replace")
+    #     self.raw_path = raw_path
+    #     self.path = path
+    #     self.params = {}
+    #     # self.regex = {'id': str, ...}
+    #     # pas de raison que le delimiter soit autre chose que /
 
 
 # App starts here
@@ -123,6 +120,9 @@ _routes = {}
 
 def _add(method, path):
     """Decorator used by get/post/put/delete."""
+    # ici la fonction devrait changer request
+    # ça fait un side effect dégueu?
+    # ...
 
     def decorator(fn):
         _routes[(method, path)] = fn
@@ -167,6 +167,9 @@ async def _read_request(reader):
     method, raw_path = parts[0], parts[1]
     split = urlsplit(raw_path)
     path = split.path or "/"
+    # pk path ou lieu de split path
+    # ce que je veux dire
+    # pourquoi l'info de split est pas dans la req
 
     query = parse_qs(split.query)
 
@@ -228,7 +231,7 @@ async def _serve(host, port, sock):
 
             handler = _routes.get((request.method, request.path))
 
-            if handler is None:  # unknown route, try static and if not return 500
+            if handler is None:  # unknown route, try static and if not, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
                 candidate = candidate.resolve()
                 if (
@@ -253,6 +256,7 @@ async def _serve(host, port, sock):
                     )
                 return
 
+            # maybe i was snob here
             response = await handler(request)
             await _send(writer, *response)
 
