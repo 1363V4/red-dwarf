@@ -14,10 +14,17 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 
-# --- small response helpers ---
-def cookie(
-    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
-):
+# RESPONSE
+
+def html(body, status=HTTPStatus.OK, headers=None):
+    # why sync and no async? can't remember
+    # header None because i'm afraid to [] in kw, but maybe i can
+    return (body, status, "text/html", headers or [])
+
+def empty():
+    return "", HTTPStatus.NO_CONTENT, None, []
+
+def cookie(key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"):
     parts = [f"{key}={value}", f"Path={path}"]
 
     if max_age is not None:
@@ -31,104 +38,80 @@ def cookie(
 
     return ("Set-Cookie", "; ".join(parts))
 
+def patch(data):
+    # does not work for the moment... weird
+    lines = ["event: datastar-patch-elements"]
+    lines += [f"data: {line}" for line in data.strip().splitlines()]
+    # lines.append("")   # blank line = end of event
 
-def html(body, status=HTTPStatus.OK, headers=None):
-    return (body, status, "text/html", headers or [])
-
-
-def empty():
-    return "", HTTPStatus.NO_CONTENT, None, []
-
-
-# request
+    body = "\n".join(lines) + "\n\n"
+    return (body, HTTPStatus.OK, "text/event-stream", [("Cache-Control", "no-cache"), ("Connection", "keep-alive")])
 
 
-def _read_signals(method, headers, params, body):
-    # meh, not a fan of the control flow
-    if "datastar-request" not in headers:
-        return {}
-    if method in ("GET", "DELETE"):
-        data = params.get("datastar")
-    elif headers.get("content-type") == "application/json":
-        data = body.decode("utf-8", errors="replace")
-    else:
-        return {}
-    return json.loads(data) if data else {}
 
+# REQUEST
 
 @dataclass(slots=True)
 class Request:
-    """
-    en fait property ça permet avec le decorator de mettre un docstring facile
-    on valide ou pas ?
-    """
-
     method: str
     raw_path: str
     path: str
     query: dict
     headers: dict
-    body: bytes  # str?
-    signals: dict = field(default_factory=dict)  # obligé ?
+    body: bytes
+    signals: dict = field(default_factory=dict)
     params: dict = field(default_factory=dict)
 
-    # def __init__(self, method, raw_path, path, query, headers, body):
-    #     self.method = method
-    #     self.query = query
-    #     self.headers = headers
-    #     self.body = body
-    #     self.signals = _read_signals(method, headers, query, body)
-    #     # sus values
-    #     self.text = self.body.decode("utf-8", errors="replace")
-    #     self.raw_path = raw_path
-    #     self.path = path
-    #     self.params = {}
-    #     # self.regex = {'id': str, ...}
-    #     # pas de raison que le delimiter soit autre chose que /
+
+def _read_signals(request):
+    # we'll use it when handling requests but i write it here
+    if "datastar-request" not in request.headers:
+        return {}
+    if request.method in ("GET", "DELETE"):
+        data = request.query.get("datastar") or ['']
+        data = data[0]
+    elif request.headers.get("content-type") == "application/json":
+        data = request.body.decode("utf-8", errors="replace")
+    else:
+        return {}
+    return json.loads(data) if data else {}
 
 
-# App starts here
+# ROUTING
 
+_routes = []  # (method, compiled_regex, [param_names], handler_fn)
 
-def _watch_and_restart():
-    mtimes = {}
-
-    def iter_watched_files():
-        yield from Path.cwd().glob("*.py")
-        yield from Path("static").glob("**/*")
-
-    while True:
-        for file_path in iter_watched_files():
-            try:
-                mtime = file_path.stat().st_mtime
-            except OSError:
-                continue
-            key = str(file_path.resolve())
-            if key not in mtimes:
-                mtimes[key] = mtime
-            elif mtime > mtimes[key]:
-                print(f"grug see change in {file_path}, restarting...")
-                # argv not used at the moment
-                os.execv(sys.executable, [sys.executable] + sys.argv)
-        time.sleep(1)
-
-
-# ROUTING / APP STARTS HERE
-
-_routes = {}
-
+def _path_to_regex(path):
+    # we turn /path/<arg1>/<arg2> into regex capture groups
+    names = re.findall(r"\<(\w+)\>", path)
+    pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)  
+    # i see the case for wildcards, like in /path/*
+    # but i'd prefer not to write the code
+    # and force a /path/<_> workaround
+    # match/case style
+    return re.compile(f"^{pattern}$"), names
 
 def _add(method, path):
-    """Decorator used by get/post/put/delete."""
-    # ici la fonction devrait changer request
-    # ça fait un side effect dégueu?
-    # ...
+    regex, param_names = _path_to_regex(path)
 
     def decorator(fn):
-        _routes[(method, path)] = fn
+        _routes.append((method, regex, param_names, fn))
         return fn
 
     return decorator
+
+def _find_handler(method, path):
+    # walk routes in order, return first match
+    # so register carefully
+ 
+    for route_method, regex, param_names, fn in _routes:
+        if route_method != method:
+            continue
+        m = regex.match(path)
+        if m:
+            params = dict(zip(param_names, m.groups()))  # {"id": "42", ...}
+            return fn, params
+    return None, {}
 
 
 def get(path):
@@ -146,15 +129,11 @@ def put(path):
 def delete(path):
     return _add("DELETE", path)
 
+# APP
 
 async def _read_request(reader):
     """
-    Read and parse a single HTTP/1.1 request from the stream.
-
-    Still intentionally small:
-    - no chunked transfer decoding
-    - no multipart parser
-    - minimal header handling
+    unsure if fit for http2/3 
     """
     line = await reader.readline()
     if not line:
@@ -165,18 +144,17 @@ async def _read_request(reader):
         return None
 
     method, raw_path = parts[0], parts[1]
+    print(f"grug see {method} request on {raw_path}") # telemetry ftw
+
     split = urlsplit(raw_path)
     path = split.path or "/"
-    # pk path ou lieu de split path
-    # ce que je veux dire
-    # pourquoi l'info de split est pas dans la req
-
     query = parse_qs(split.query)
+    # i don't see why you'd need more info from the split
 
-    # Read headers until the blank separator line.
     headers = {}
     while True:
         header_line = await reader.readline()
+        # Read headers until the blank separator line. (put link to spec)
         if header_line in (b"\r\n", b"\n", b""):
             break
 
@@ -187,7 +165,6 @@ async def _read_request(reader):
         name, value = decoded.split(":", 1)
         headers[name.strip().lower()] = value.strip()
 
-    # Read request body if Content-Length is present and valid.
     body = b""
     try:
         content_length = int(headers.get("content-length", 0))
@@ -206,12 +183,17 @@ async def _send(writer, body_text, status, content_type, headers):
     The body is always encoded as UTF-8 text.
     """
     body = body_text.encode("utf-8")
+
     header = (
-        f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
+        f"HTTP/1.1 {status.value} {status.phrase}\r\n"
+        f"Content-Length: {len(body)}\r\n"
     )
     if content_type:
         header += f"Content-Type: {content_type}\r\n"
+    for key, value in headers:
+        header += f"{key}: {value}\r\n"
     header += "\r\n"
+
     writer.write(header.encode("utf-8") + body)
     await writer.drain()
 
@@ -229,7 +211,9 @@ async def _serve(host, port, sock):
             if request is None:
                 return
 
-            handler = _routes.get((request.method, request.path))
+            handler, params = _find_handler(request.method, request.path)
+            request.params = params
+            request.signals = _read_signals(request)
 
             if handler is None:  # unknown route, try static and if not, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
@@ -258,6 +242,8 @@ async def _serve(host, port, sock):
 
             # maybe i was snob here
             response = await handler(request)
+            # si générateur, send_chunk, sinon _send
+            # on mettrait le bloc try ici
             await _send(writer, *response)
 
         except Exception as e:
@@ -298,10 +284,30 @@ async def _serve(host, port, sock):
     async with server:
         await server.serve_forever()
 
-
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
-    """Synchronous entry point for running the async server."""
     if reload:
+        def _watch_and_restart():
+            mtimes = {}
+
+            def iter_watched_files():
+                yield from Path.cwd().glob("*.py")
+                yield from Path("static").glob("**/*")
+
+            while True:
+                for file_path in iter_watched_files():
+                    try:
+                        mtime = file_path.stat().st_mtime
+                    except OSError:
+                        continue
+                    key = str(file_path.resolve())
+                    if key not in mtimes:
+                        mtimes[key] = mtime
+                    elif mtime > mtimes[key]:
+                        print(f"grug see change in {file_path}, restarting...")
+                        # argv not used at the moment
+                        os.execv(sys.executable, [sys.executable] + sys.argv)
+                time.sleep(1)
+
         t = threading.Thread(target=_watch_and_restart, daemon=True)
         t.start()
     try:

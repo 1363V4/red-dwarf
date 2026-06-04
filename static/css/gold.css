@@ -14,9 +14,9 @@
         a {
                 color: inherit;
         }
-    button, input[type="submit"], input[type="reset"] {
-        cursor: pointer;
-    }
+        button, input[type="submit"], input[type="reset"] {
+                cursor: pointer;
+        }
         button, input, select, textarea {
                 font: inherit;
                 color: inherit;

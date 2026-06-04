@@ -1,5 +1,12 @@
 # Red Dwarf User Manual
 
+## Marketing
+
+1. Declare routes
+2. Send Html
+3. ...
+4. Profit!
+
 ## Overview
 
 ### What is Red Dwarf?
@@ -151,9 +158,20 @@ Now we just need to add the SSE route:
 
 Go to localhost and watch the dwarf count time!
 
+NB: we only allow
+patching html
+with datastar default merge strategy
+that should work 100% of the time
+patch signals by piggybacking them on whatever
+(put that shit in details)
+
 ## Usage behing a reverse proxy
 
-...
+we like caddy
+
+NB: for nginx you have to disable
+X-Accel-Buffering
+in the headers for sse streams
 
 ## The rest of the backend
 
