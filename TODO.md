@@ -3,9 +3,12 @@
 - regex DONE
 - signals DONE
 - cookies DONE
-- long stream
+- long stream DONE
 - escaping
 - compression
+- caching assets
+- lrucache?
+- executescript and redirect?
 - memoryview?
 
 # NOTES
@@ -31,6 +34,10 @@ red-phone pour la télémétrie (devrait être inclus)
 
 et pourquoi red?
 Really Efficient Design
+
+@wraps is cool for red-pandas
+
+starlette ou litestar quand on aura fini de rigoler ?
 
 ---
 

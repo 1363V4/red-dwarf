@@ -1,5 +1,6 @@
 import grug as rd
 from pprint import pprint
+import asyncio
 
 # import redwarf as rd
 # @rd.get("/")
@@ -56,14 +57,6 @@ async def sse(request):
 	<script type="module" src="/static/js/datastar.js"></script>
 </head>
 <body class="gc">
-    <div style="
-    width: 100%;
-    height: 100%;
-">
-        <svg viewBox="0 0 100 100">
-            <circle x=50 y=50 r=10 fill="red">
-        </svg>
-    </div>
     <main id="main" data-init="@get('/sse_stream')">waiting for a stream</main>
 </body>
 </html>
@@ -72,10 +65,22 @@ async def sse(request):
 @rd.get("/sse_stream")
 async def sse_stream(request):
     response = rd.patch("""
-<main id="main">got it got it</main>
+<main id="main">got it got it 2</main>
 """)
     pprint(response)
-    return response
+    yield response
+
+# @rd.get("/sse_stream")
+# async def sse_stream(request):
+#     response = rd.patch("""
+# <main id="main">got it</main>
+# """)
+#     try:
+#         while True:
+#             yield response
+#             await asyncio.sleep(1)
+#     finally:
+#             print("cleanup")
 
 if __name__ == "__main__":
     rd.run(reload=True)
