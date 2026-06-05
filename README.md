@@ -1,5 +1,7 @@
 # Red Dwarf User Manual
 
+![logo](/static/img/red_dwarf.png)
+
 ## Marketing
 
 1. Declare routes
@@ -41,6 +43,7 @@ so you can write your Python however you see fit.
 Simply run `uv add red-dwarf` to your project to get going.
 
 Note: You need Python minimum version ?????????????????????
+hmm yes if you have to import zlib/compress which are optional modules
 
 Then, head over to [Quickstart](#quickstart)
 
@@ -218,6 +221,10 @@ No, they're strings.
 
 We recommend using `print()`.
 
+**How can I test?**
+
+We recommend using `assert`.
+
 **Can I add routes at runtime?**
 
 Well you can change your code and the server will restart, but... why do that?
@@ -225,6 +232,10 @@ Well you can change your code and the server will restart, but... why do that?
 **Why is there no compression?**
 
 We let the reverse proxy do it.
+because caddy will compress it faster, after its own middlewares
+and can also use precompressed files!! to save some cpu
+(rarely the bottleneck tbh but hey)
+yeah you lose some on the compression window
 
 **Why is there no static files?**
 

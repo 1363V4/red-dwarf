@@ -13,3 +13,6 @@ for seg in segments:
         regex += re.escape(seg)  # escapes '/' and literal text safely
 pattern = re.compile(f"^{regex}$")
 print("pattern", pattern)
+
+x = "".encode('utf-8')
+print(x)

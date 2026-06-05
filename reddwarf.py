@@ -14,6 +14,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 import inspect
 from contextlib import aclosing
+from html import escape
+from pprint import pprint
 
 
 # RESPONSE
@@ -88,7 +90,7 @@ async def _read_request(reader):
         return None
 
     method, raw_path = parts[0], parts[1]
-    print(f"grug see {method} request on {raw_path}") # telemetry ftw
+    print(f"grug see {method} request on {escape(raw_path)}") # telemetry ftw
 
     split = urlsplit(raw_path)
     path = split.path or "/"
@@ -186,8 +188,11 @@ async def _send_full(writer, body, status, content_type, headers):
         header += f"{key}: {value}\r\n"
     header += "\r\n"
 
-    # maybe i could make two function instead of checking for encoding
+    # we send static assets as bytes
+    # maybe i could make two function instead of checking for encoding, like _send_full_static/_send_full_file
     # will have to test if it speeds boost
+    # ... if we talk performance, just put uvloop bro
+    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     if not isinstance(body, bytes):
         body = body.encode("utf-8")    
 
@@ -226,6 +231,8 @@ async def _serve(host, port, sock):
             handler, params = _find_handler(request.method, request.path)
             request.params = params
             request.signals = _read_signals(request)
+            print("_"*30)
+            pprint(request)
 
             if handler is None:  # unknown route, try static and if not conclusive, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
@@ -235,15 +242,28 @@ async def _serve(host, port, sock):
                     and candidate.is_relative_to(Path("static").resolve())
                     and candidate.is_file()
                 ):
-                    mime, _ = mimetypes.guess_type(candidate.name)
-                    body = candidate.read_bytes()
-                    await _send_full(
-                        writer,
-                        body,
-                        HTTPStatus.OK,
-                        mime or 'application/octet-stream',
-                        [],
-                    )
+                    # check if it's a cached asset
+                    stat = candidate.stat()
+                    etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+                    if request.headers.get("if-none-match") == etag:
+                        await _send_full(
+                            writer,
+                            "",
+                            HTTPStatus.NOT_MODIFIED,
+                            None,
+                            [("ETag", etag)],
+                        )
+                    else:
+                        mime, _ = mimetypes.guess_type(candidate.name)
+                        print(candidate, mime)
+                        body = candidate.read_bytes()
+                        await _send_full(
+                            writer,
+                            body,
+                            HTTPStatus.OK,
+                            mime or 'application/octet-stream',
+                            [("ETag", etag)],
+                        )
                 else:
                     await _send_full(
                         writer,
@@ -302,6 +322,7 @@ async def _serve(host, port, sock):
         print(f"grug listen on unix:{sock}")
     else:
         server = await asyncio.start_server(handle, host, port)
+        # maybe a welcome message: 1 read the tao, 2 escape user input
         print(f"grug listen on http://{host}:{port}")
 
     # SIGTERM is common in containers/process managers.

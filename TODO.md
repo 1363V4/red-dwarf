@@ -4,12 +4,15 @@
 - signals DONE
 - cookies DONE
 - long stream DONE
-- escaping
-- compression
-- caching assets
-- lrucache?
-- executescript and redirect?
-- memoryview?
+- caching assets DONE
+- escaping DONE
+- compression DONE
+- lrucache? not needed, mimetypes seem to be cached internally, most stuff is one shot...
+- executescript and redirect? NOPE, on prévoit un div, redirect c'est juste un wrap set timeout nul
+- memoryview? meh no
+- well it works for a v0.1
+- draft a website
+- package: uv add red_dwarf
 
 # NOTES
 
@@ -38,10 +41,13 @@ Really Efficient Design
 @wraps is cool for red-pandas
 
 starlette ou litestar quand on aura fini de rigoler ?
+litestar non
+on a un bench ici (fortune cookie): https://www.techempower.com/benchmarks/#hw=ph&test=fortune&l=zijzen-sf&section=data-r23
+
 
 ---
 
-page 263
+page 263 du livre pandas
 
 ---
 
