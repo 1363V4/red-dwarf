@@ -225,6 +225,10 @@ We recommend using `print()`.
 
 We recommend using `assert`.
 
+**What?! You didn't write any tests**
+
+Not yet, no.
+
 **Can I add routes at runtime?**
 
 Well you can change your code and the server will restart, but... why do that?

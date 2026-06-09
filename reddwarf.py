@@ -362,13 +362,15 @@ async def _serve(host, port, sock):
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     if reload:
         def watch_and_restart():
-            mtimes = {}
-
             def iter_watched_files():
                 yield from Path.cwd().glob("*.py")
                 yield from Path("static").glob("**/*")
 
-            while True:
+            mtimes = {}
+            files_changed = threading.Event()
+
+            while not files_changed.is_set():
+                time.sleep(1)
                 for file_path in iter_watched_files():
                     try:
                         mtime = file_path.stat().st_mtime
@@ -379,9 +381,7 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
                         mtimes[key] = mtime
                     elif mtime > mtimes[key]:
                         print(f"grug see change in {file_path}, restarting...")
-                        # argv not used at the moment
-                        os.execv(sys.executable, [sys.executable] + sys.argv)
-                time.sleep(1)
+                        files_changed.set()
 
         t = threading.Thread(target=watch_and_restart, daemon=True)
         t.start()
