@@ -16,17 +16,20 @@ import inspect
 from contextlib import aclosing
 from html import escape
 from pprint import pprint
+from collections import namedtuple
 
 
 # RESPONSE
 
+Response = namedtuple("Response", ['body', 'status', 'type', 'headers'])
+
 def html(body, status=HTTPStatus.OK, headers=None):
     # why sync and no async? can't remember
     # header None because i'm afraid to [] in kw, but maybe i can
-    return (body, status, "text/html", headers or [])
+    return Response(body, status, "text/html", list(headers or []))
 
 def empty():
-    return "", HTTPStatus.NO_CONTENT, None, []
+    return Response("", HTTPStatus.NO_CONTENT, None, [])
 
 def cookie(key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"):
     parts = [f"{key}={value}", f"Path={path}"]
@@ -41,7 +44,6 @@ def cookie(key, value, path="/", max_age=None, secure=True, httponly=True, sames
         parts.append(f"SameSite={samesite}")
 
     return ("Set-Cookie", "; ".join(parts))
-
 
 def patch(data):
     # simplest patch ever
@@ -136,7 +138,7 @@ def _path_to_regex(path):
     # match/case style
     return re.compile(f"^{pattern}$"), names
 
-def _add(method, path):
+def _add_route(method, path):
     regex, param_names = _path_to_regex(path)
 
     def decorator(fn):
@@ -145,39 +147,44 @@ def _add(method, path):
 
     return decorator
 
-def _find_handler(method, path):
-    # walk routes in order, return first match
-    # so register carefully
- 
-    for route_method, regex, param_names, fn in _routes:
-        if route_method != method:
-            continue
-        m = regex.match(path)
-        if m:
-            params = dict(zip(param_names, m.groups()))  # {"id": "42", ...}
-            return fn, params
-    return None, {}
-
 
 def get(path):
-    return _add("GET", path)
+    return _add_route("GET", path)
 
 
 def post(path):
-    return _add("POST", path)
+    return _add_route("POST", path)
 
 
 def put(path):
-    return _add("PUT", path)
+    return _add_route("PUT", path)
 
 
 def delete(path):
-    return _add("DELETE", path)
+    return _add_route("DELETE", path)
+
+
+_before_request = []
+_after_response = []
+
+
+def before_request(fn):
+    # only put sync functions in there
+    # until i find a reason to async scan
+    _before_request.append(fn)
+    return fn
+
+def after_response(fn):
+    _after_response.append(fn)
+    return fn
+
 
 # APP
 
 async def _send_full(writer, body, status, content_type, headers):
-    # head and body for html, empty or error responses
+    # here i define every arg, and will unpack Response when calling _send_full
+    # should i write _send_full(response) and unpack in it?
+    # guido take the wheel
     header = (
         f"HTTP/1.1 {status.value} {status.phrase}\r\n"
         f"Content-Length: {len(body)}\r\n"
@@ -220,6 +227,19 @@ async def _send_sse_event(writer, event):
 
 # APP
 
+def _find_handler(method, path):
+    # walk routes in order, return first match
+    # so register carefully
+ 
+    for route_method, regex, param_names, fn in _routes:
+        if route_method != method:
+            continue
+        m = regex.match(path)
+        if m:
+            params = dict(zip(param_names, m.groups()))  # {"id": "42", ...}
+            return fn, params
+    return None, {}
+
 async def _serve(host, port, sock):
     async def handle(reader, writer):
         try:
@@ -231,10 +251,8 @@ async def _serve(host, port, sock):
             handler, params = _find_handler(request.method, request.path)
             request.params = params
             request.signals = _read_signals(request)
-            print("_"*30)
-            pprint(request)
 
-            if handler is None:  # unknown route, try static and if not conclusive, return 500
+            if handler is None:  # unregistered route, try static and if not conclusive, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
                 candidate = candidate.resolve()
                 if (
@@ -274,9 +292,15 @@ async def _serve(host, port, sock):
                     )
                 return
 
+            for fn in _before_request:
+                early_response = fn(request)
+                if early_response is not None:
+                    await _send_full(writer, *early_response)
+                    return
+
             response = handler(request)
 
-            if inspect.isasyncgen(response):
+            if inspect.isasyncgen(response): # sse patch
                 try:
                     async with aclosing(response) as gen:
                         await _send_sse_headers(writer)
@@ -291,6 +315,8 @@ async def _serve(host, port, sock):
                     pass
             else:
                 response = await response
+                for fn in _after_response:
+                    response = fn(request, response)
                 await _send_full(writer, *response)
 
         except Exception as e:

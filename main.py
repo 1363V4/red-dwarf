@@ -3,6 +3,7 @@ from pprint import pprint
 from html import escape
 
 
+import other_site
 
 with open("index.html", 'r') as f:
     PAGE_HOME = f.read()
@@ -17,7 +18,6 @@ async def index(request):
 async def smash_club(request):
     name = request.signals.get("name")
     if name:
-        # we should use html.escape one day
         return rd.html(f"<p id=username>GRUG {escape(name)}</p>")
     else:
         return rd.empty()

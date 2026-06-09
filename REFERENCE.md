@@ -27,8 +27,15 @@ reload : bool : just the python files and the static folder
 ### empty()
 ### patch()
 ### cookies()
-### signals()
-### alive()
+
+## Routing
+
+### add/...
+### before/after
+
+before is if route found (wont fire for assets)
+you can send response and it will cancel
+after has response
 
 ## Request
 
@@ -41,3 +48,8 @@ self.query
 self.headers
 self.body
 self.signals
+self.params
+
+## Response
+
+u shouldn't bother !!

@@ -11,7 +11,11 @@
 - executescript and redirect? NOPE, on prévoit un div, redirect c'est juste un wrap set timeout nul
 - memoryview? meh no
 - well it works for a v0.1
-- draft a website
+
+TO BE FAIR
+I'm missing a before_request/after_request
+- clean up
+- draft a website on legovh
 - package: uv add red_dwarf
 
 # NOTES
