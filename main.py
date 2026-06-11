@@ -9,9 +9,17 @@ with open("index.html", 'r') as f:
     PAGE_HOME = f.read()
 
 
+@rd.before_request
+def cookie_check(request):
+    # user_id = request.
+    pprint(request)
+
 @rd.get("/")
 async def index(request):
-    return rd.html(PAGE_HOME, headers=[rd.cookie("nusky", "vaati")])
+    return rd.html(
+        PAGE_HOME, 
+        headers=[rd.cookie("nusky", "vaati")]
+        )
 
 
 @rd.post("/club")

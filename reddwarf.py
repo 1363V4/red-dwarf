@@ -1,22 +1,24 @@
 import asyncio
 import json
+from math import e
 import mimetypes
 import os
 import re
 import signal
-import sys
 import threading
 import time
 import traceback
+import sys
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 import inspect
-from contextlib import aclosing
+from contextlib import aclosing, suppress
 from html import escape
 from pprint import pprint
 from collections import namedtuple
+import subprocess
 
 
 # RESPONSE
@@ -353,39 +355,47 @@ async def _serve(host, port, sock):
 
     # SIGTERM is common in containers/process managers.
     # Closing the server lets `serve_forever()` exit cleanly.
+    # but shouldn't this be higher level?
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, lambda *_: server.close())
 
     async with server:
         await server.serve_forever()
 
+async def _watch_for_changes():
+    def iter_watched_files():
+        yield from Path.cwd().glob("*.py")
+        yield from Path("static").glob("**/*")
+
+    mtimes = {}
+
+    while True:
+        await asyncio.sleep(1)
+        for file_path in iter_watched_files():
+            try:
+                mtime = file_path.stat().st_mtime
+            except OSError:
+                continue
+            key = str(file_path.resolve())
+            if key not in mtimes:
+                mtimes[key] = mtime
+            elif mtime > mtimes[key]:
+                print(f"grug see change in {file_path}, restarting...")
+                return
+
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
-    if reload:
-        def watch_and_restart():
-            def iter_watched_files():
-                yield from Path.cwd().glob("*.py")
-                yield from Path("static").glob("**/*")
-
-            mtimes = {}
-            files_changed = threading.Event()
-
-            while not files_changed.is_set():
-                time.sleep(1)
-                for file_path in iter_watched_files():
-                    try:
-                        mtime = file_path.stat().st_mtime
-                    except OSError:
-                        continue
-                    key = str(file_path.resolve())
-                    if key not in mtimes:
-                        mtimes[key] = mtime
-                    elif mtime > mtimes[key]:
-                        print(f"grug see change in {file_path}, restarting...")
-                        files_changed.set()
-
-        t = threading.Thread(target=watch_and_restart, daemon=True)
-        t.start()
     try:
-        asyncio.run(_serve(host, port, sock))
+        if reload:
+            async def _run_with_reload():
+                watcher = asyncio.create_task(_watch_for_changes())
+                server = asyncio.create_task(_serve(host, port, sock))
+                await watcher # returns on change
+                server.cancel()
+                with suppress(asyncio.CancelledError):
+                    await server
+            while True:
+                asyncio.run(_run_with_reload())
+        else:
+            asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:
         print("grug: out.")
