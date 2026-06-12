@@ -1,6 +1,7 @@
 from html import escape
 from pathlib import Path
 from pprint import pprint
+from time import asctime
 
 import other_site
 import reddwarf as rd
@@ -32,9 +33,10 @@ async def docs(request):
     return rd.html(PAGE_DOCS)
 
 
-@rd.get("/time")
+@rd.post("/time")
 async def time(request):
-    return rd.html("<p id=time>time</p>")
+    time = asctime()
+    return rd.html(f"<p id=time>{time}</p>")
 
 
 @rd.get("/sse")

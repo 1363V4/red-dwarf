@@ -299,10 +299,12 @@ async def _serve(host, port, sock):
                         body = candidate.read_bytes()
                         await _send_full(
                             writer,
-                            body,
-                            HTTPStatus.OK,
-                            mime or "application/octet-stream",
-                            [("ETag", etag)],
+                            Response(
+                                body,
+                                HTTPStatus.OK,
+                                mime or "application/octet-stream",
+                                [("ETag", etag)],
+                            ),
                         )
                 else:
                     await _send_full(

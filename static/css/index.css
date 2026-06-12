@@ -51,6 +51,7 @@ h1 {
     background-color: var(--blue);
     border-radius: var(--m);
     text-decoration: none;
+    cursor: pointer;
 }
 
 .button_2 {
