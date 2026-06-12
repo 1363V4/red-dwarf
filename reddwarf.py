@@ -17,7 +17,7 @@ from urllib.parse import parse_qs, urlsplit
 
 # RESPONSE
 
-Response = namedtuple("Response", ["body", "status", "type", "headers"])
+Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
 
 
 def html(body, status=HTTPStatus.OK, headers=None):
@@ -190,10 +190,8 @@ def after_response(fn):
 # APP
 
 
-async def _send_full(writer, body, status, content_type, headers):
-    # here i define every arg, and will unpack Response when calling _send_full
-    # should i write _send_full(response) and unpack in it?
-    # guido take the wheel
+async def _send_full(writer, response):
+    body, status, content_type, headers = response
     header = (
         f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
     )
@@ -260,10 +258,12 @@ async def _serve(host, port, sock):
             if request is None:
                 await _send_full(
                     writer,
-                    "grug not understand request",
-                    HTTPStatus.BAD_REQUEST,
-                    "text/plain",
-                    [],
+                    Response(
+                        "grug not understand request",
+                        HTTPStatus.BAD_REQUEST,
+                        "text/plain",
+                        [],
+                    ),
                 )
                 return
 
@@ -289,10 +289,9 @@ async def _serve(host, port, sock):
                     if request.headers.get("if-none-match") == etag:
                         await _send_full(
                             writer,
-                            "",
-                            HTTPStatus.NOT_MODIFIED,
-                            None,
-                            [("ETag", etag)],
+                            Response(
+                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
+                            ),
                         )
                     else:
                         mime, _ = mimetypes.guess_type(candidate.name)
@@ -308,10 +307,12 @@ async def _serve(host, port, sock):
                 else:
                     await _send_full(
                         writer,
-                        "grug not know this path",
-                        HTTPStatus.NOT_FOUND,
-                        "text/plain",
-                        [],
+                        Response(
+                            "grug not know this path",
+                            HTTPStatus.NOT_FOUND,
+                            "text/plain",
+                            [],
+                        ),
                     )
                 return
 
@@ -340,17 +341,19 @@ async def _serve(host, port, sock):
                 response = await response
                 for fn in _after_response:
                     response = fn(request, response)
-                await _send_full(writer, *response)
+                await _send_full(writer, response)
 
         except Exception as e:
             print(f"grug had problem: {e}")
             traceback.print_exc()
             await _send_full(
                 writer,
-                "grug make accident",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-                "text/plain",
-                [],
+                Response(
+                    "grug make accident",
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                    "text/plain",
+                    [],
+                ),
             )
 
         finally:

@@ -32,13 +32,9 @@ async def docs(request):
     return rd.html(PAGE_DOCS)
 
 
-@rd.post("/club")
-async def smash_club(request):
-    name = request.signals.get("name")
-    if name:
-        return rd.html(f"<p id=username>GRUG {escape(name)}</p>")
-    else:
-        return rd.empty()
+@rd.get("/time")
+async def time(request):
+    return rd.html("<p id=time>time</p>")
 
 
 @rd.get("/sse")

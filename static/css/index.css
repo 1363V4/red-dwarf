@@ -5,6 +5,24 @@
     text-align: center;
 }
 
+h1 {
+    font-family: "redros";
+    background: linear-gradient(0, var(--red), var(--black));
+    background-clip: text;
+    font-weight: bold;
+    filter: drop-shadow(0px 2px var(--white));
+    animation: shadow_anim 5s linear infinite alternate;
+}
+
+@keyframes shadow_anim {
+    from {
+        text-shadow: -2px 2px var(--black);
+    }
+    to {
+        text-shadow: 2px 1px var(--red);
+    }
+}
+
 .gmb {
     margin-bottom: var(--l);
 }
@@ -24,6 +42,9 @@
 
 #buttons {
     grid-template-columns: 1fr 1fr;
+    @media (width > 500px) {
+        gap: var(--l);
+    }
 }
 
 .button_1 {
@@ -34,6 +55,7 @@
 
 .button_2 {
     background-color: #080808;
+    border: 1px solid var(--blue);
     border-radius: var(--m);
     text-decoration: none;
     grid-template-columns: auto 1fr;
@@ -43,6 +65,9 @@
 }
 
 li {
+    code {
+        width: 100%;
+    }
     pre {
         padding-top: var(--s);
         margin-bottom: var(--m);
