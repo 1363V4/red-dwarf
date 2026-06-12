@@ -1,25 +1,36 @@
 import reddwarf as rd
 from pprint import pprint
 from html import escape
-
+from pathlib import Path
 
 import other_site
 
-with open("index.html", 'r') as f:
+HTML_PATH = Path().cwd() / "static" / "html"
+
+
+with open(HTML_PATH / "index.html", 'r') as f:
     PAGE_HOME = f.read()
 
 
 @rd.before_request
 def cookie_check(request):
-    # user_id = request.
-    pprint(request)
+    pass
+    # pprint(request)
 
 @rd.get("/")
 async def index(request):
+    with open(HTML_PATH / "index.html", 'r') as f:
+        PAGE_HOME = f.read()
     return rd.html(
         PAGE_HOME, 
         headers=[rd.cookie("nusky", "vaati")]
         )
+
+@rd.get("/docs")
+async def docs(request):
+    with open(HTML_PATH / "docs.html", 'r') as f:
+        PAGE_DOCS = f.read()
+    return rd.html(PAGE_DOCS)
 
 
 @rd.post("/club")

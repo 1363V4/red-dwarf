@@ -380,8 +380,7 @@ async def _watch_for_changes():
             if key not in mtimes:
                 mtimes[key] = mtime
             elif mtime > mtimes[key]:
-                print(f"grug see change in {file_path}, restarting...")
-                return
+                return file_path
 
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     try:
@@ -389,7 +388,8 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
             async def _run_with_reload():
                 watcher = asyncio.create_task(_watch_for_changes())
                 server = asyncio.create_task(_serve(host, port, sock))
-                await watcher # returns on change
+                file_path = await watcher # returns on change
+                print(f"grug see change in {file_path}, restarting...")
                 server.cancel()
                 with suppress(asyncio.CancelledError):
                     await server

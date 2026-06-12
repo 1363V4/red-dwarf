@@ -1,6 +1,7 @@
 @import url("gold.css");
 
 :root {
+    --m: 31px;
     --black: #1c1c1c;
     --white: #ffffff80;
     --red: #f33535;
