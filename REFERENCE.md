@@ -53,3 +53,4 @@ self.params
 ## Response
 
 u shouldn't bother !!
+but it's a namedtuple with 4 things

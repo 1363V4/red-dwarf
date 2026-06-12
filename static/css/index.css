@@ -1,20 +1,52 @@
 @import url("gold.css");
+@import url("root.css");
 
-:root {
-    --m: 31px;
-    --black: #1c1c1c;
-    --white: #ffffff80;
-    --red: #f33535;
-    --blue: #2936f2;
+* {
+    text-align: center;
 }
 
-body {
-    background: var(--black);
-    color: var(--white);
-    font-family: system-ui;
+.gmb {
+    margin-bottom: var(--l);
 }
 
-.button {
-    background: var(--blue);
-    cursor: pointer;
+#tagline {
+    font-style: italic;
+}
+
+#uv {
+    background-color: var(--code);
+    border-radius: var(--m);
+    code {
+        background: linear-gradient(0deg, black, white);
+        background-clip: text;
+    }
+}
+
+#buttons {
+    grid-template-columns: 1fr 1fr;
+}
+
+.button_1 {
+    background-color: var(--blue);
+    border-radius: var(--m);
+    text-decoration: none;
+}
+
+.button_2 {
+    background-color: #080808;
+    border-radius: var(--m);
+    text-decoration: none;
+    grid-template-columns: auto 1fr;
+    img {
+        width: var(--m);
+    }
+}
+
+li {
+    pre {
+        padding-top: var(--s);
+        margin-bottom: var(--m);
+        text-align: left;
+        border: 1px solid var(--blue);
+    }
 }

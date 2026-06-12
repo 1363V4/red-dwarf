@@ -1,14 +1,14 @@
-import reddwarf as rd
-from pprint import pprint
 from html import escape
 from pathlib import Path
+from pprint import pprint
 
 import other_site
+import reddwarf as rd
 
 HTML_PATH = Path().cwd() / "static" / "html"
 
 
-with open(HTML_PATH / "index.html", 'r') as f:
+with open(HTML_PATH / "index.html", "r") as f:
     PAGE_HOME = f.read()
 
 
@@ -17,18 +17,17 @@ def cookie_check(request):
     pass
     # pprint(request)
 
+
 @rd.get("/")
 async def index(request):
-    with open(HTML_PATH / "index.html", 'r') as f:
+    with open(HTML_PATH / "index.html", "r") as f:
         PAGE_HOME = f.read()
-    return rd.html(
-        PAGE_HOME, 
-        headers=[rd.cookie("nusky", "vaati")]
-        )
+    return rd.html(PAGE_HOME, headers=[rd.cookie("nusky", "vaati")])
+
 
 @rd.get("/docs")
 async def docs(request):
-    with open(HTML_PATH / "docs.html", 'r') as f:
+    with open(HTML_PATH / "docs.html", "r") as f:
         PAGE_DOCS = f.read()
     return rd.html(PAGE_DOCS)
 
@@ -40,6 +39,7 @@ async def smash_club(request):
         return rd.html(f"<p id=username>GRUG {escape(name)}</p>")
     else:
         return rd.empty()
+
 
 @rd.get("/sse")
 async def sse(request):
@@ -59,6 +59,7 @@ async def sse(request):
 </html>
 """)
 
+
 @rd.get("/sse_stream")
 async def sse_stream(request):
     response = rd.patch("""
@@ -66,6 +67,7 @@ async def sse_stream(request):
 """)
     pprint(response)
     yield response
+
 
 # @rd.get("/sse_stream")
 # async def sse_stream(request):

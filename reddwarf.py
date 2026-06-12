@@ -1,39 +1,38 @@
 import asyncio
+import inspect
 import json
-from math import e
 import mimetypes
 import os
 import re
 import signal
-import threading
-import time
 import traceback
-import sys
+from collections import namedtuple
+from contextlib import aclosing, suppress
 from dataclasses import dataclass, field
+from html import escape
 from http import HTTPStatus
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
-import inspect
-from contextlib import aclosing, suppress
-from html import escape
 from pprint import pprint
-from collections import namedtuple
-import subprocess
-
+from urllib.parse import parse_qs, urlsplit
 
 # RESPONSE
 
-Response = namedtuple("Response", ['body', 'status', 'type', 'headers'])
+Response = namedtuple("Response", ["body", "status", "type", "headers"])
+
 
 def html(body, status=HTTPStatus.OK, headers=None):
     # why sync and no async? can't remember
     # header None because i'm afraid to [] in kw, but maybe i can
     return Response(body, status, "text/html", list(headers or []))
 
+
 def empty():
     return Response("", HTTPStatus.NO_CONTENT, None, [])
 
-def cookie(key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"):
+
+def cookie(
+    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
+):
     parts = [f"{key}={value}", f"Path={path}"]
 
     if max_age is not None:
@@ -47,6 +46,7 @@ def cookie(key, value, path="/", max_age=None, secure=True, httponly=True, sames
 
     return ("Set-Cookie", "; ".join(parts))
 
+
 def patch(data):
     # simplest patch ever
     lines = ["event: datastar-patch-elements"]
@@ -54,7 +54,9 @@ def patch(data):
 
     return "\n".join(lines) + "\n\n"
 
+
 # REQUEST
+
 
 @dataclass(slots=True)
 class Request:
@@ -73,7 +75,7 @@ def _read_signals(request):
     if "datastar-request" not in request.headers:
         return {}
     if request.method in ("GET", "DELETE"):
-        data = request.query.get("datastar") or ['']
+        data = request.query.get("datastar") or [""]
         data = data[0]
     elif request.headers.get("content-type") == "application/json":
         data = request.body.decode("utf-8", errors="replace")
@@ -81,9 +83,10 @@ def _read_signals(request):
         return {}
     return json.loads(data) if data else {}
 
+
 async def _read_request(reader):
     """
-    unsure if fit for http2/3 
+    unsure if fit for http2/3
     """
     line = await reader.readline()
     if not line:
@@ -94,7 +97,7 @@ async def _read_request(reader):
         return None
 
     method, raw_path = parts[0], parts[1]
-    print(f"grug see {method} request on {escape(raw_path)}") # telemetry ftw
+    print(f"grug see {method} request on {escape(raw_path)}")  # telemetry ftw
 
     split = urlsplit(raw_path)
     path = split.path or "/"
@@ -130,15 +133,17 @@ async def _read_request(reader):
 
 _routes = []  # (method, compiled_regex, [param_names], handler_fn)
 
+
 def _path_to_regex(path):
     # we turn /path/<arg1>/<arg2> into regex capture groups
     names = re.findall(r"\<(\w+)\>", path)
-    pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)  
+    pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)
     # i see the case for wildcards, like in /path/*
     # but i'd prefer not to write the code
     # and force a /path/<_> workaround
     # match/case style
     return re.compile(f"^{pattern}$"), names
+
 
 def _add_route(method, path):
     regex, param_names = _path_to_regex(path)
@@ -176,6 +181,7 @@ def before_request(fn):
     _before_request.append(fn)
     return fn
 
+
 def after_response(fn):
     _after_response.append(fn)
     return fn
@@ -183,13 +189,13 @@ def after_response(fn):
 
 # APP
 
+
 async def _send_full(writer, body, status, content_type, headers):
     # here i define every arg, and will unpack Response when calling _send_full
     # should i write _send_full(response) and unpack in it?
     # guido take the wheel
     header = (
-        f"HTTP/1.1 {status.value} {status.phrase}\r\n"
-        f"Content-Length: {len(body)}\r\n"
+        f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
     )
     if content_type:
         header += f"Content-Type: {content_type}\r\n"
@@ -203,10 +209,11 @@ async def _send_full(writer, body, status, content_type, headers):
     # ... if we talk performance, just put uvloop bro
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     if not isinstance(body, bytes):
-        body = body.encode("utf-8")    
+        body = body.encode("utf-8")
 
     writer.write(header.encode("utf-8") + body)
     await writer.drain()
+
 
 async def _send_sse_headers(writer, headers=None):
     header = (
@@ -218,21 +225,24 @@ async def _send_sse_headers(writer, headers=None):
 
     for k, v in headers or []:
         header += f"{k}: {v}\r\n"
-    header += "\r\n" # nécessaire ?
+    header += "\r\n"  # nécessaire ?
 
     writer.write(header.encode("utf-8"))
     await writer.drain()
+
 
 async def _send_sse_event(writer, event):
     writer.write(event.encode("utf-8"))
     await writer.drain()
 
+
 # APP
+
 
 def _find_handler(method, path):
     # walk routes in order, return first match
     # so register carefully
- 
+
     for route_method, regex, param_names, fn in _routes:
         if route_method != method:
             continue
@@ -242,19 +252,28 @@ def _find_handler(method, path):
             return fn, params
     return None, {}
 
+
 async def _serve(host, port, sock):
     async def handle(reader, writer):
         try:
             request = await _read_request(reader)
             if request is None:
-                await _send_full(writer, "grug not understand request", HTTPStatus.BAD_REQUEST, "text/plain", [])
+                await _send_full(
+                    writer,
+                    "grug not understand request",
+                    HTTPStatus.BAD_REQUEST,
+                    "text/plain",
+                    [],
+                )
                 return
 
             handler, params = _find_handler(request.method, request.path)
             request.params = params
             request.signals = _read_signals(request)
 
-            if handler is None:  # unregistered route, try static and if not conclusive, return 500
+            if (
+                handler is None
+            ):  # unregistered route, try static and if not conclusive, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
                 candidate = candidate.resolve()
                 if (
@@ -264,7 +283,9 @@ async def _serve(host, port, sock):
                 ):
                     # check if it's a cached asset
                     stat = candidate.stat()
-                    etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+                    etag = (
+                        f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+                    )
                     if request.headers.get("if-none-match") == etag:
                         await _send_full(
                             writer,
@@ -281,7 +302,7 @@ async def _serve(host, port, sock):
                             writer,
                             body,
                             HTTPStatus.OK,
-                            mime or 'application/octet-stream',
+                            mime or "application/octet-stream",
                             [("ETag", etag)],
                         )
                 else:
@@ -302,7 +323,7 @@ async def _serve(host, port, sock):
 
             response = handler(request)
 
-            if inspect.isasyncgen(response): # sse patch
+            if inspect.isasyncgen(response):  # sse patch
                 try:
                     async with aclosing(response) as gen:
                         await _send_sse_headers(writer)
@@ -362,6 +383,7 @@ async def _serve(host, port, sock):
     async with server:
         await server.serve_forever()
 
+
 async def _watch_for_changes():
     def iter_watched_files():
         yield from Path.cwd().glob("*.py")
@@ -382,17 +404,20 @@ async def _watch_for_changes():
             elif mtime > mtimes[key]:
                 return file_path
 
+
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     try:
         if reload:
+
             async def _run_with_reload():
                 watcher = asyncio.create_task(_watch_for_changes())
                 server = asyncio.create_task(_serve(host, port, sock))
-                file_path = await watcher # returns on change
+                file_path = await watcher  # returns on change
                 print(f"grug see change in {file_path}, restarting...")
                 server.cancel()
                 with suppress(asyncio.CancelledError):
                     await server
+
             while True:
                 asyncio.run(_run_with_reload())
         else:

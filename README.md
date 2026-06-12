@@ -44,6 +44,7 @@ Simply run `uv add red-dwarf` to your project to get going.
 
 Note: You need Python minimum version ?????????????????????
 hmm yes if you have to import zlib/compress which are optional modules
+but even there with asyncio, let's say 3.11
 
 Then, head over to [Quickstart](#quickstart)
 

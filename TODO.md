@@ -1,20 +1,5 @@
 # TODO
 
-- regex DONE
-- signals DONE
-- cookies DONE
-- long stream DONE
-- caching assets DONE
-- escaping DONE
-- compression DONE
-- lrucache? not needed, mimetypes seem to be cached internally, most stuff is one shot...
-- executescript and redirect? NOPE, on prévoit un div, redirect c'est juste un wrap set timeout nul
-- memoryview? meh no
-- well it works for a v0.1
-
-TO BE FAIR
-I'm missing a before_request/after_request
-- clean up
 - draft a website on legovh
 - package: uv add red_dwarf
 
@@ -54,4 +39,3 @@ on a un bench ici (fortune cookie): https://www.techempower.com/benchmarks/#hw=p
 page 263 du livre pandas
 
 ---
-
