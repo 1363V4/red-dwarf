@@ -1,0 +1,47 @@
+@import url("gold.css");
+@import url("root.css");
+
+body {
+    display: grid;
+}
+
+h1 {
+    font-family: "slkscr";
+    color: var(--red);
+}
+
+h2 {
+    font-family: "slkscr";
+}
+
+header {
+    margin-bottom: var(--s);
+}
+
+#side_panel {
+    background-color: var(--blue);
+    height: fit-content;
+    div:not(#burger) {
+        &:not([opened]) {
+            display: none;
+        }
+    }
+}
+
+#burger {
+    width: 100%;
+    z-index: 1;
+    img {
+        width: var(--m);
+        cursor: pointer;
+        align-self: start;
+        justify-self: end;
+    }
+}
+
+#main_panel {
+    padding-inline: var(--m);
+    * {
+        margin-bottom: var(--s);
+    }
+}

@@ -1,0 +1,44 @@
+@font-face {
+    font-family: "redhat";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/static/fonts/RedHatDisplay-Regular.ttf") format("woff2");
+}
+@font-face {
+    font-family: "redros";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/static/fonts/RedRose-Regular.ttf") format("woff2");
+}
+@font-face {
+    font-family: "slkscr";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/static/fonts/Silkscreen-Regular.ttf") format("woff2");
+}
+
+:root {
+    --m: 31px;
+    --black: #070204;
+    --white: #ffffff80;
+    --red: #f33535;
+    --blue: #2936f2;
+    --code: #5036ff;
+}
+
+body {
+    background: var(--black);
+    color: var(--white);
+    font-family: "redhat", system-ui;
+}
+
+footer {
+    margin-top: var(--m);
+    background-color: var(--blue);
+    font-size: var(--xs);
+    width: 100%;
+    text-align: center;
+}
