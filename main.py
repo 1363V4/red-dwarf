@@ -33,10 +33,38 @@ async def docs(request):
     return rd.html(PAGE_DOCS)
 
 
+@rd.get("/red")
+async def red(request):
+    with open(HTML_PATH / "red.html", "r") as f:
+        PAGE_RED = f.read()
+    return rd.html(PAGE_RED)
+
+
 @rd.post("/time")
 async def time(request):
     time = asctime()
-    return rd.html(f"<p id=time>{time}</p>")
+    yield rd.patch(f"<p id=time>{time}</p>")
+
+
+@rd.get("/docs/<folder_id>/<document_id>")
+async def serve_document(request):
+    print(request.method)
+    # 'GET'
+    print(request.raw_path)
+    # '/docs/folder18/document4?page=42'
+    print(request.path)
+    # '/docs/folder18/document4'
+    print(request.params)
+    # {'folder_id': 'folder18', 'document_id': 'document4'}
+    print(request.query)
+    # {'page': ['2']}
+    print(request.headers)
+    # {'host': '...', ...}
+    print(request.body)
+    # b''
+    print(request.signals)
+    # {'theme': 'light'}
+    return rd.html("ok")
 
 
 @rd.get("/sse")

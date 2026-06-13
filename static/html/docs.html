@@ -23,31 +23,98 @@
             </div>
         </header>
         <div id="main_panel">
-            <h1>Introduction</h1>
-            <p>Hello and welcome!</p>
-            <h2>The RED Philosophy</h2>
-            <p>RED stands for Really Efficient Design.</p>
-            <p>Our goal is to create very small pure Python tools.</p>
-            <p>Red Dwarf was made because Datastar and backend apps</p>
-            <h2>When to use Red Dwarf</h2>
-            <p>For fun</p>
-            <hr />
             <h1>Getting Started</h1>
-            <h2>Installation</h2>
+            <h2>Installation (TBD)</h2>
+            <p>I hope to get to uv add red-dwarf</p>
+            <p>uv add red_dwarf ?</p>
+            <p>uv add reddwarf ?</p>
+            <p>maybe a better name</p>
             <p>...</p>
-            <h2>Your first app</h2>
-            <p>...</p>
+            <p>Thinking about it, this project could be a git clone</p>
+            <h2>Your first app (TBD)</h2>
+            <p>I hope to get to uv init</p>
+            <p>or whatever stario was doing</p>
+            <p>and well, the idea is to show html and patch</p>
+            <p>or maybe a todo app?</p>
             <hr />
             <h1>Reference</h1>
             <h2>Routing</h2>
-            <p>...@get et al</p>
+            <p>the four methods: @get, @post, @put and @delete</p>
+            <p>
+                Define routes by writing an async function and slapping a
+                decorator on top of it.
+            </p>
+            <p>
+                You can use the 4 standards HTTP methods: GET, POST, PUT and
+                DELETE.
+            </p>
+            <code>
+                <pre>
+@rd.get("/users")
+async def get_users(request):
+    return rd.html(...)
+
+@rd.post("/new_user")
+async def new_user(request):
+    return rd.html(...)
+
+@rd.put("/rename_user")
+async def rename_user(request):
+    return rd.html(...)
+
+@rd.delete("/remove_user")
+async def remove_user(request):
+    return rd.html(...)
+                </pre>
+            </code>
+            <p>You can also use parameters in your routes as such: <code>@rd.get("docs/<folder_id>/<document_id>")</code> and get back these values in your handler (see the "Request" chapter)</p>
             <h2>Requests</h2>
-            <p>...</p>
-            <h3>method</h3>
-            <p>...</p>
-            <h3>...</h3>
-            <p>...</p>
+            <p>Request is the only stateful object in Red Dwarf.</p>
+            <p>
+                When Red Dwarf receives a request, it parses it for you into a
+                Request object that you can freely access. Most parameters are
+                strings or dicts.
+            </p>
+            <code>
+                <pre>
+@rd.get("/docs/<folder_id>/<document_id>")
+async def serve_document(request):
+    print(request.method)
+    # 'GET'
+    print(request.raw_path)
+    # '/docs/folder18/document4?page=42'
+    print(request.path)
+    # '/docs/folder18/document4'
+    print(request.params)
+    # {'folder_id': 'folder18', 'document_id': 'document4'}
+    print(request.query)
+    # {'page': ['2']}
+    print(request.headers)
+    # {'host': '...', ...}
+    print(request.body)
+    # b''
+    print(request.signals)
+    # {'theme': 'light'}
+    return rd.html(...)
+                </pre>
+            </code>
+            <p>Datastar signals are automatically parsed.</p>
+            <p>I should parse cookies I guess (TBD)</p>
+            <p>
+                You can modify the Request but there's no reason to do it so
+                don't :)
+            </p>
+            <h4>request.method</h4>
+            <p>get post etc</p>
+            <h3>request.raw_path</h3>
+            <p>get post etc</p>
+            <h3>request.path</h3>
+            <p>get post etc</p>
+            <h3>etc</h3>
+            <p>etc</p>
             <h2>Responses</h2>
+            <p>...html et al</p>
+            <h3>html()</h3>
             <p>...html et al</p>
             <h2>run()</h2>
             <p>...options</p>

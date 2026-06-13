@@ -76,3 +76,7 @@ li {
         border: 1px solid var(--blue);
     }
 }
+
+#time {
+    color: var(--code);
+}
