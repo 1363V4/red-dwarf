@@ -2,6 +2,7 @@ import asyncio
 import inspect
 import json
 import mimetypes
+import multiprocessing
 import os
 import re
 import signal
@@ -410,21 +411,39 @@ async def _watch_for_changes():
                 return file_path
 
 
+def _serve_entrypoint(host, port, sock):
+    try:
+        asyncio.run(_serve(host, port, sock))
+    except KeyboardInterrupt:
+        pass
+
+
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     try:
         if reload:
+            # async def _run_with_reload():
+            #     watcher = asyncio.create_task(_watch_for_changes())
+            #     server = asyncio.create_task(_serve(host, port, sock))
+            #     changed_file_path = await watcher  # returns on change
+            #     print(f"grug see change in {changed_file_path}, restarting...")
+            #     server.cancel()
+            #     with suppress(asyncio.CancelledError):
+            #         await server
 
-            async def _run_with_reload():
-                watcher = asyncio.create_task(_watch_for_changes())
-                server = asyncio.create_task(_serve(host, port, sock))
-                file_path = await watcher  # returns on change
-                print(f"grug see change in {file_path}, restarting...")
-                server.cancel()
-                with suppress(asyncio.CancelledError):
-                    await server
-
+            # while True:
+            #     asyncio.run(_run_with_reload())
             while True:
-                asyncio.run(_run_with_reload())
+                child = multiprocessing.Process(
+                    target=_serve_entrypoint, args=(host, port, sock)
+                )
+                child.start()
+
+                # Parent watches for changes, child serves
+                changed = asyncio.run(_watch_for_changes())
+                print(f"grug see change in {changed}, restarting...")
+
+                child.terminate()
+                child.join()
         else:
             asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:

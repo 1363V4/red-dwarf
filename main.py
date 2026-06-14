@@ -1,13 +1,16 @@
 from html import escape
+
+# import other_site
+from importlib import import_module
 from pathlib import Path
 from pprint import pprint
 from time import asctime
 
-import other_site
 import reddwarf as rd
 
 HTML_PATH = Path().cwd() / "static" / "html"
 
+import_module("other_site")
 
 with open(HTML_PATH / "index.html", "r") as f:
     PAGE_HOME = f.read()
@@ -15,6 +18,7 @@ with open(HTML_PATH / "index.html", "r") as f:
 
 @rd.before_request
 def cookie_check(request):
+    print("MMMMMMMMMMMMMMMMMMMMMMMM")
     pass
     # pprint(request)
 
