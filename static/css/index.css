@@ -66,6 +66,9 @@ h1 {
 }
 
 li {
+    p {
+        text-decoration: underline;
+    }
     code {
         width: 100%;
     }

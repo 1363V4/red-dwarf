@@ -5,6 +5,7 @@ from importlib import import_module
 from pathlib import Path
 from pprint import pprint
 from time import asctime
+from uuid import uuid4
 
 import reddwarf as rd
 
@@ -25,8 +26,9 @@ def cookie_check(request):
 
 @rd.get("/")
 async def index(request):
-    with open(HTML_PATH / "index.html", "r") as f:
-        PAGE_HOME = f.read()
+    print("OK")
+    # with open(HTML_PATH / "index.html", "r") as f:
+    #     PAGE_HOME = f.read()
     return rd.html(PAGE_HOME, headers=[rd.cookie("nusky", "vaati")])
 
 
@@ -47,6 +49,7 @@ async def red(request):
 @rd.post("/time")
 async def time(request):
     time = asctime()
+    # hmmm ptet script est bien
     yield rd.patch(f"<p id=time>{time}</p>")
 
 

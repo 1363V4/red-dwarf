@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import re
 import signal
+import time
 import traceback
 from collections import namedtuple
 from contextlib import aclosing, suppress
@@ -390,7 +391,7 @@ async def _serve(host, port, sock):
         await server.serve_forever()
 
 
-async def _watch_for_changes():
+def _watch_for_changes():
     def iter_watched_files():
         yield from Path.cwd().glob("*.py")
         yield from Path("static").glob("**/*")
@@ -398,7 +399,7 @@ async def _watch_for_changes():
     mtimes = {}
 
     while True:
-        await asyncio.sleep(1)
+        time.sleep(1)  # os.wait() instead? maybe
         for file_path in iter_watched_files():
             try:
                 mtime = file_path.stat().st_mtime
@@ -411,7 +412,8 @@ async def _watch_for_changes():
                 return file_path
 
 
-def _serve_entrypoint(host, port, sock):
+def _run_once(host, port, sock):
+    # used for reload mode, see comments there
     try:
         asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:
@@ -421,25 +423,20 @@ def _serve_entrypoint(host, port, sock):
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     try:
         if reload:
-            # async def _run_with_reload():
-            #     watcher = asyncio.create_task(_watch_for_changes())
-            #     server = asyncio.create_task(_serve(host, port, sock))
-            #     changed_file_path = await watcher  # returns on change
-            #     print(f"grug see change in {changed_file_path}, restarting...")
-            #     server.cancel()
-            #     with suppress(asyncio.CancelledError):
-            #         await server
-
-            # while True:
-            #     asyncio.run(_run_with_reload())
+            # reload works like this:
+            # we spawn a child process to serve
+            # on file change (blocking in parent process)
+            # we restart child
+            # pros: clean memory reset
+            # cons: not pure asyncio
+            # man i suck
             while True:
                 child = multiprocessing.Process(
-                    target=_serve_entrypoint, args=(host, port, sock)
+                    target=_run_once, args=(host, port, sock)
                 )
                 child.start()
 
-                # Parent watches for changes, child serves
-                changed = asyncio.run(_watch_for_changes())
+                changed = _watch_for_changes()
                 print(f"grug see change in {changed}, restarting...")
 
                 child.terminate()

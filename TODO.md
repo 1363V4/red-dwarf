@@ -18,7 +18,9 @@ smiley rouge qui sourit avec les yeux en croix
 knuckles because sanic red?
 red-potion? red-star?
 red-alert for the pubsub system lol
-red-tea for the templating?
+red-tea for the templating? ouais cool.
+import red_dwarf as rd
+import red_tea as rt
 red-keep for the backup?
 red-wine jsais pas trop, linux?
 red-hot un site x lol

@@ -31,16 +31,19 @@
         </div>
         <hr class="gmb" />
         <div class="gmb">
-            <p class="gmb">See it in action!</p>
+            <p
+                class="gmb"
+                data-text="$fetching ? 'Fetching time': 'See it in action!'"
+            ></p>
             <div
                 class="gmb gp-xs button_1"
                 data-on:pointerdown="@post('/time')"
                 data-indicator:fetching
+                data-on:datastar-patch-elements="console.log(1)"
             >
                 Click to get time from server
             </div>
-            <p data-text="$fetching ? 'Fetching time': ''"></p>
-            <p id="time">Time will appear here</p>
+            <p data-init="console.log(0)" id="time">Time will appear here</p>
         </div>
         <hr class="gmb" />
         <div class="gc">
