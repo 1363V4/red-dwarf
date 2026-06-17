@@ -413,7 +413,8 @@ def _watch_for_changes():
 
 
 def _run_once(host, port, sock):
-    # used for reload mode, see comments there
+    # separate function so Windows can pickle it
+    # used in reload mode, see comments there
     try:
         asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:

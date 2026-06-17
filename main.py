@@ -50,7 +50,7 @@ async def red(request):
 async def time(request):
     time = asctime()
     # hmmm ptet script est bien
-    yield rd.patch(f"<p id=time>{time}</p>")
+    yield rd.patch(f'<div id=time data-init="console.log(0)">{time}</div>')
 
 
 @rd.get("/docs/<folder_id>/<document_id>")

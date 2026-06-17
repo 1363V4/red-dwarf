@@ -1,5 +1,8 @@
 # TODO
 
+-
+
+- thank lea for prism
 - draft a website on legovh
 - package: uv add red_dwarf
 
@@ -21,6 +24,7 @@ red-alert for the pubsub system lol
 red-tea for the templating? ouais cool.
 import red_dwarf as rd
 import red_tea as rt
+https://github.com/t-strings/tdom
 red-keep for the backup?
 red-wine jsais pas trop, linux?
 red-hot un site x lol

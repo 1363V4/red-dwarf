@@ -48,8 +48,8 @@
                 You can use the 4 standards HTTP methods: GET, POST, PUT and
                 DELETE.
             </p>
+            <pre class="language-python">
             <code>
-                <pre>
 @rd.get("/users")
 async def get_users(request):
     return rd.html(...)
@@ -75,8 +75,8 @@ async def remove_user(request):
                 Request object that you can freely access. Most parameters are
                 strings or dicts.
             </p>
+            <pre class="language-python">
             <code>
-                <pre>
 @rd.get("/docs/<folder_id>/<document_id>")
 async def serve_document(request):
     print(request.method)
@@ -96,8 +96,8 @@ async def serve_document(request):
     print(request.signals)
     # {'theme': 'light'}
     return rd.html(...)
-                </pre>
             </code>
+            </pre>
             <p>Datastar signals are automatically parsed.</p>
             <p>I should parse cookies I guess (TBD)</p>
             <p>
@@ -121,6 +121,6 @@ async def serve_document(request):
             <h2>Other</h2>
             <p>...before/after request</p>
         </div>
-        <footer>2026 - Red Dwarf - Handcoded with love</footer>
     </body>
+    <footer>2026 - Red Dwarf - Handcoded with love</footer>
 </html>

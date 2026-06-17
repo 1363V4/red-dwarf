@@ -5,21 +5,24 @@
     text-align: center;
 }
 
+main {
+    padding-inline: var(--s);
+}
+
 h1 {
     font-family: "redros";
-    background: linear-gradient(0, var(--red), var(--black));
+    padding-top: var(--m);
+    background: linear-gradient(0deg, var(--red), var(--black));
     background-clip: text;
     font-weight: bold;
-    filter: drop-shadow(0px 2px var(--white));
-    animation: shadow_anim 5s linear infinite alternate;
+    text-shadow: 0px 0px var(--red);
+    filter: drop-shadow(2px 2px var(--blue));
+    animation: shadow_anim 2s steps(6) infinite;
 }
 
 @keyframes shadow_anim {
-    from {
-        text-shadow: -2px 2px var(--black);
-    }
-    to {
-        text-shadow: 2px 1px var(--red);
+    50% {
+        text-shadow: -4px 4px var(--red);
     }
 }
 
@@ -62,21 +65,6 @@ h1 {
     grid-template-columns: auto 1fr;
     img {
         width: var(--m);
-    }
-}
-
-li {
-    p {
-        text-decoration: underline;
-    }
-    code {
-        width: 100%;
-    }
-    pre {
-        padding-top: var(--s);
-        margin-bottom: var(--m);
-        text-align: left;
-        border: 1px solid var(--blue);
     }
 }
 

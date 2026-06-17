@@ -1,3 +1,5 @@
+@import url("prism.css");
+
 @font-face {
     font-family: "redhat";
     font-style: normal;
@@ -37,8 +39,19 @@ body {
 
 footer {
     margin-top: var(--m);
-    background-color: var(--blue);
+    padding-bottom: var(--xxs);
     font-size: var(--xs);
+    background: linear-gradient(var(--blue), var(--black));
+    border-radius: 40% 40% 0 0;
     width: 100%;
     text-align: center;
+}
+
+.button[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+code {
+    font-size: var(--s);
 }

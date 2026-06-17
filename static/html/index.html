@@ -6,110 +6,114 @@
         <link rel="icon" href="/static/img/red_dwarf.png" />
         <link rel="stylesheet" href="/static/css/index.css" />
         <script type="module" src="/static/js/datastar.js"></script>
+        <script type="module" src="/static/js/prism.js"></script>
     </head>
-    <body class="gf gc gp-s">
-        <div class="gc">
-            <h1 class="gt-xl gmb">RED DWARF</h1>
-            <img class="gmb" src="/static/img/logo_128.png" />
-            <p id="tagline" class="gmb">
-                The <small class="gt-s">smallest</small> Python server
-            </p>
-            <div id="uv" class="gz gmb">
-                <code class="gp-s">uv add red-dwarf</code>
+    <body class="gf gc">
+        <main>
+            <div class="gc">
+                <h1 class="gt-xl gmb">RED DWARF</h1>
+                <img class="gmb" src="/static/img/logo_128.png" />
+                <p id="tagline" class="gmb">
+                    The <small class="gt-s">smallest</small> Python server
+                </p>
+                <div id="uv" class="gz gmb">
+                    <code class="gp-s">uv add red-dwarf</code>
+                </div>
+                <div id="buttons" class="gc gmb">
+                    <a
+                        href="https://github.com/1363V4/red-dwarf"
+                        target="_blank"
+                        class="button_2 gp-xs gc"
+                    >
+                        <img src="/static/svg/github.svg" />
+                        Github</a
+                    >
+                    <a href="/docs" class="button_1 gp-xs">Read docs</a>
+                </div>
             </div>
-            <div id="buttons" class="gc gmb">
-                <a
-                    href="https://github.com/1363V4/red-dwarf"
-                    target="_blank"
-                    class="button_2 gp-xs gc"
+            <hr class="gmb" />
+            <div class="gmb">
+                <p
+                    class="gmb"
+                    data-text="$_fetching ? 'Fetching time': 'See it in action!'"
+                ></p>
+                <div
+                    class="gmb gp-xs button button_1"
+                    data-on:pointerdown="@post('/time')"
+                    data-indicator:_fetching
+                    data-attr:disabled="$_fetching"
+                    data-on-signal-patch="console.log(patch)"
+                    data-on:datastar-signal-patch="console.log(3)"
                 >
-                    <img src="/static/svg/github.svg" />
-                    Github</a
-                >
-                <a href="/docs" class="button_1 gp-xs">Read docs</a>
+                    Click to get time from server
+                </div>
+                <div data-init="console.log(0)" id="time">
+                    Time will appear here
+                </div>
             </div>
-        </div>
-        <hr class="gmb" />
-        <div class="gmb">
-            <p
-                class="gmb"
-                data-text="$fetching ? 'Fetching time': 'See it in action!'"
-            ></p>
-            <div
-                class="gmb gp-xs button_1"
-                data-on:pointerdown="@post('/time')"
-                data-indicator:fetching
-                data-on:datastar-patch-elements="console.log(1)"
-            >
-                Click to get time from server
-            </div>
-            <p data-init="console.log(0)" id="time">Time will appear here</p>
-        </div>
-        <hr class="gmb" />
-        <div class="gc">
-            <ul class="gt-s">
-                <li>
-                    <p class="gmb">1. Declare routes</p>
+            <hr class="gmb" />
+            <div class="gc">
+                <ul>
+                    <li>
+                        <p><u>Step 1</u>: Declare routes</p>
+                        <pre class="language-python">
                     <code>
-                        <pre class="gp-xs">
 import reddwarf as rd
 
 @rd.get("/hello")
 async def hello(request):
-    return rd.html("Hello World!")
-                        </pre>
-                    </code>
-                </li>
-                <li>
-                    <p class="gmb">2. Send HTML</p>
+    return rd.html("Hello World!")</code>
+                    </pre>
+                    </li>
+                    <li>
+                        <p><u>Step 2</u>: Send HTML</p>
+                        <pre class="language-python">
                     <code>
-                        <pre class="gp-xs">
 @rd.get("/refresh")
 async def refresh(request):
-    return rd.patch("&lt;p id=&quot;notifications&quot;&gt;New message!&lt;/p&gt;")
-                        </pre>
-                    </code>
-                </li>
-                <li>
-                    <p class="gmb">3. ???</p>
+    return rd.patch("&lt;p id='notifications'&gt;New message!&lt;/p&gt;")</code>
+                    </pre>
+                    </li>
+                    <li>
+                        <p><u>Step 3</u>: ???</p>
+                        <pre class="language-markdown">
                     <code>
-                        <pre class="gp-xs">
 That's it!
 
 Red Dwarf is made of 1 class and 5 functions.
-You'll learn it in no time!
-                        </pre>
-                    </code>
-                </li>
-                <li>
-                    <p class="gmb">4. Profit!</p>
+You'll learn it in no time!</code>
+                    </pre>
+                    </li>
+                    <li>
+                        <p><u>Step 4</u>: Profit!</p>
+                        <pre class="language-markdown">
                     <code>
-                        <pre class="gp-xs">
 Despite being small, Red Dwarf is very capable.
 
-You can develop almost any website with it!
-                        </pre>
-                    </code>
-                </li>
-            </ul>
-        </div>
-        <hr class="gmb" />
-        <p class="gmb">
-            Red Dwarf is the ideal tool to develop capable websites in no time.
-        </p>
-        <p class="gmb">However, it is <b>strongly</b> opinionated.</p>
-        <p class="gmb">
-            Interested? Read about Red Dwarf's philosophy
-            <a href="/red">here</a>.
-        </p>
-        <p class="gmb">
-            Want to see it in action? Go check Red Dwarf's
-            <a href="/red">examples page</a>.
-        </p>
-        <p>
-            You can also read the <a href="/docs">docs</a> or read the code on
-            <a href="https://github.com/1363V4/red-dwarf">Github</a>.
-        </p>
+You can develop almost any website with it!</code>
+                    </pre>
+                    </li>
+                </ul>
+            </div>
+            <hr class="gmb" />
+            <p class="gmb">
+                Red Dwarf is the ideal tool to develop capable websites in no
+                time.
+            </p>
+            <p class="gmb">However, it is <b>strongly</b> opinionated.</p>
+            <p class="gmb">
+                Interested? Read about Red Dwarf's philosophy
+                <a href="/red">here</a>.
+            </p>
+            <p class="gmb">
+                Want to see it in action? Go check Red Dwarf's
+                <a href="/red">examples page</a>.
+            </p>
+            <p>
+                You can also read the <a href="/docs">docs</a> or read the code
+                on <a href="https://github.com/1363V4/red-dwarf">Github</a>.
+            </p>
+        </main>
         <footer>2026 - Red Dwarf - Handcoded with love</footer>
     </body>
 </html>
