@@ -13,58 +13,20 @@ from collections import namedtuple
 from contextlib import aclosing, suppress
 from dataclasses import dataclass, field
 from html import escape
-from http import HTTPStatus
+from http import HTTPStatus, cookies
 from pathlib import Path
 from pprint import pprint
 from urllib.parse import parse_qs, urlsplit
 
-# SECURITY
+# Hello and welcome!
+# This code is intended to be read by humans.
+# What is a server?
+# a miserable little pile of routes.
+# that is, functions which map requests to html responses
+# and this is all we'll do.
 
-MAX_BODY_SIZE = 1_048_576  # bytes
-MAX_HEADER_LINE = 8192  # bytes
-READ_TIMEOUT = 10  # s
-
-# RESPONSE
-
-Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
-
-
-def html(body, status=HTTPStatus.OK, headers=None):
-    # why sync and no async? can't remember
-    # header None because i'm afraid to [] in kw, but maybe i can
-    return Response(body, status, "text/html", list(headers or []))
-
-
-def empty():
-    return Response("", HTTPStatus.NO_CONTENT, None, [])
-
-
-def cookie(
-    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
-):
-    parts = [f"{key}={value}", f"Path={path}"]
-
-    if max_age is not None:
-        parts.append(f"Max-Age={max_age}")
-    if secure:
-        parts.append("Secure")
-    if httponly:
-        parts.append("HttpOnly")
-    if samesite:
-        parts.append(f"SameSite={samesite}")
-
-    return ("Set-Cookie", "; ".join(parts))
-
-
-def patch(data):
-    # simplest patch ever
-    lines = ["event: datastar-patch-elements"]
-    lines += [f"data: elements {line}" for line in data.splitlines()]
-
-    return "\n".join(lines) + "\n\n"
-
-
-# REQUEST
+_routes = []  # (method, compiled_regex, [param_names], handler_fn)
+# should be a namedtuple?
 
 
 @dataclass(slots=True)
@@ -75,8 +37,76 @@ class Request:
     query: dict
     headers: dict
     body: bytes
+    cookies: dict = field(default_factory=dict)
     signals: dict = field(default_factory=dict)
     params: dict = field(default_factory=dict)
+
+
+Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
+
+# SECURITY
+
+MAX_BODY_SIZE = 1_048_576  # bytes
+MAX_HEADER_LINE = 8192  # bytes
+READ_TIMEOUT = 10  # s
+
+# ROUTING
+
+
+def _path_to_regex(path):
+    # we turn /path/<arg1>/<arg2> into regex capture groups
+    names = re.findall(r"\<(\w+)\>", path)
+    pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)
+    # i see the case for wildcards, like in /path/*
+    # but i'd prefer not to write the code
+    # and force a /path/<_> workaround
+    # match/case style
+    return re.compile(f"^{pattern}$"), names
+
+
+def _add_route(method, path):
+    regex, param_names = _path_to_regex(path)
+
+    def decorator(fn):
+        _routes.append((method, regex, param_names, fn))
+        return fn
+
+    return decorator
+
+
+def get(path):
+    return _add_route("GET", path)
+
+
+def post(path):
+    return _add_route("POST", path)
+
+
+def put(path):
+    return _add_route("PUT", path)
+
+
+def delete(path):
+    return _add_route("DELETE", path)
+
+
+_before_request = []
+_after_response = []
+
+
+def before_request(fn):
+    # only put sync functions in there
+    # until i find a reason to async scan
+    _before_request.append(fn)
+    return fn
+
+
+def after_response(fn):
+    _after_response.append(fn)
+    return fn
+
+
+# REQUEST
 
 
 def _read_signals(request):
@@ -146,63 +176,42 @@ async def _read_request(reader):
     return Request(method, raw_path, path, query, headers, body)
 
 
-# ROUTING
-
-_routes = []  # (method, compiled_regex, [param_names], handler_fn)
-# should be a namedtuple?
+# RESPONSE
 
 
-def _path_to_regex(path):
-    # we turn /path/<arg1>/<arg2> into regex capture groups
-    names = re.findall(r"\<(\w+)\>", path)
-    pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)
-    # i see the case for wildcards, like in /path/*
-    # but i'd prefer not to write the code
-    # and force a /path/<_> workaround
-    # match/case style
-    return re.compile(f"^{pattern}$"), names
+def html(body, status=HTTPStatus.OK, headers=None):
+    # why sync and no async? can't remember
+    # header None because i'm afraid to [] in kw, but maybe i can
+    return Response(body, status, "text/html", list(headers or []))
 
 
-def _add_route(method, path):
-    regex, param_names = _path_to_regex(path)
-
-    def decorator(fn):
-        _routes.append((method, regex, param_names, fn))
-        return fn
-
-    return decorator
+def empty():
+    return Response("", HTTPStatus.NO_CONTENT, None, [])
 
 
-def get(path):
-    return _add_route("GET", path)
+def cookie(
+    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
+):
+    parts = [f"{key}={value}", f"Path={path}"]
+
+    if max_age is not None:
+        parts.append(f"Max-Age={max_age}")
+    if secure:
+        parts.append("Secure")
+    if httponly:
+        parts.append("HttpOnly")
+    if samesite:
+        parts.append(f"SameSite={samesite}")
+
+    return ("Set-Cookie", "; ".join(parts))
 
 
-def post(path):
-    return _add_route("POST", path)
+def patch(data):
+    # simplest patch ever
+    lines = ["event: datastar-patch-elements"]
+    lines += [f"data: elements {line}" for line in data.splitlines()]
 
-
-def put(path):
-    return _add_route("PUT", path)
-
-
-def delete(path):
-    return _add_route("DELETE", path)
-
-
-_before_request = []
-_after_response = []
-
-
-def before_request(fn):
-    # only put sync functions in there
-    # until i find a reason to async scan
-    _before_request.append(fn)
-    return fn
-
-
-def after_response(fn):
-    _after_response.append(fn)
-    return fn
+    return "\n".join(lines) + "\n\n"
 
 
 # APP

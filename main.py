@@ -1,12 +1,12 @@
-from html import escape
+# from html import escape
 
 # import other_site
 from importlib import import_module
 from pathlib import Path
 from pprint import pprint
 from time import asctime
-from uuid import uuid4
 
+# from uuid import uuid4
 import reddwarf as rd
 
 HTML_PATH = Path().cwd() / "static" / "html"
