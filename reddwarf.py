@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import json
+import logging
 import mimetypes
 import multiprocessing
 import os
@@ -16,6 +17,12 @@ from http import HTTPStatus
 from pathlib import Path
 from pprint import pprint
 from urllib.parse import parse_qs, urlsplit
+
+# SECURITY
+
+MAX_BODY_SIZE = 1_048_576  # bytes
+MAX_HEADER_LINE = 8192  # bytes
+READ_TIMEOUT = 10  # s
 
 # RESPONSE
 
@@ -90,7 +97,12 @@ async def _read_request(reader):
     """
     unsure if fit for http2/3
     """
-    line = await reader.readline()
+    try:
+        async with asyncio.timeout(READ_TIMEOUT):
+            line = await reader.readline()
+    except TimeoutError:
+        return None
+
     if not line:
         return None
 
@@ -112,18 +124,21 @@ async def _read_request(reader):
         # Read headers until the blank separator line. (put link to spec)
         if header_line in (b"\r\n", b"\n", b""):
             break
-
+        if len(header_line) > MAX_HEADER_LINE:
+            return None
         decoded = header_line.decode("utf-8", errors="replace").strip()
         if ":" not in decoded:
             # Skip malformed header lines instead of crashing.
             continue
         name, value = decoded.split(":", 1)
-        headers[name.strip().lower()] = value.strip()
+        headers[name.strip().lower()] = (
+            value.strip()
+        )  # headers are overwritten because we don't like shenanigans
 
     body = b""
     try:
         content_length = int(headers.get("content-length", 0))
-        if content_length > 0:
+        if 0 < content_length < MAX_BODY_SIZE:
             body = await reader.readexactly(content_length)
     except ValueError:
         pass
@@ -134,6 +149,7 @@ async def _read_request(reader):
 # ROUTING
 
 _routes = []  # (method, compiled_regex, [param_names], handler_fn)
+# should be a namedtuple?
 
 
 def _path_to_regex(path):

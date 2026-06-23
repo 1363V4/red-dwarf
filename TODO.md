@@ -1,6 +1,14 @@
 # TODO
 
--
+- cookies ? utiliser http cookie, overwrite (like headers)
+- - parse cookie in req
+- security fixes (slowloris, max body size)
+- standard methods (isoler) (redirect, crash...)
+- before/after: sync ou async?
+- split le static file answer ouais
+- split en général
+- cors, vérifier si c'est pas fait par caddy
+- is it worth checking static first?
 
 - thank lea for prism
 - draft a website on legovh
