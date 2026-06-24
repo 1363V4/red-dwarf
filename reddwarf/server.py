@@ -210,17 +210,18 @@ async def _read_request(reader):
 
 def html(body, headers=None, cookies=None):
     # why sync and no async? can't remember
-    c = SimpleCookie()
     if cookies:
-        print(cookies)
+        c = SimpleCookie()
         for key, value in cookies.items():
-            c[key] = value  # nah
-            # i either call _cookie or not
+            c[key] = value
+            c[key]["path"] = "/"
+            c[key]["max-age"] = None
+            c[key]["secure"] = True
+            c[key]["httponly"] = True
+            c[key]["samesite"] = "Lax"
     if not headers:
         headers = []
-    headers += [c.output()]
-    print("OOOOO")
-    print(headers)
+    headers += [c]
     return Response(body, HTTPStatus.OK, "text/html", headers)
 
 
@@ -234,23 +235,6 @@ def patch(data):
     lines += [f"data: elements {line}" for line in data.splitlines()]
 
     return "\n".join(lines) + "\n\n"
-
-
-def _cookie(
-    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
-):
-    c = SimpleCookie()
-    c[key] = value
-    c[key]["path"] = path
-    if max_age:
-        c[key]["max-age"] = max_age
-    if secure:
-        c[key]["secure"] = True
-    if httponly:
-        c[key]["httponly"] = True
-    if samesite:
-        c[key]["samesite"] = samesite
-    return c.output()
 
 
 # WRITERS
@@ -313,109 +297,113 @@ def _find_handler(method, path):
             return fn, params
     return None, {}
 
+async def _handle(reader, writer):
+    # this is a callback after the connection has been initialized
+    # reader is a StreamReader object, 
+    # writer is a StreamWriter object.
 
-async def _serve(host, port, sock):
-    async def handle(reader, writer):
-        try:
-            request = await _read_request(reader)
-            if request is None:
-                await _send_full(
-                    writer,
-                    Response(
-                        "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []
-                    ),
-                )
-                return
-
-            handler, params = _find_handler(request.method, request.path)
-            request.params = params
-
-            if handler is None:  
-                # unregistered route, try static and if not conclusive, return 500
-                candidate = Path("static") / request.path.removeprefix("/static/")
-                candidate = candidate.resolve()
-                if (
-                    request.method == "GET"
-                    and candidate.is_relative_to(Path("static").resolve())
-                    and candidate.is_file()
-                ):
-                    # check if it's a cached asset
-                    stat = candidate.stat()
-                    etag = (
-                        f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
-                    )
-                    if request.headers.get("if-none-match") == etag:
-                        await _send_full(
-                            writer,
-                            Response(
-                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
-                            ),
-                        )
-                    else:
-                        mime, _ = mimetypes.guess_type(candidate.name)
-                        body = candidate.read_bytes()
-                        await _send_full(
-                            writer,
-                            Response(
-                                body,
-                                HTTPStatus.OK,
-                                mime or "application/octet-stream",
-                                [("ETag", etag)],
-                            ),
-                        )
-                else:
-                    await _send_full(
-                        writer,
-                        Response(
-                            "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
-                        ),
-                    )
-                return
-
-            for fn in _before_request:
-                early_response = fn(request)
-                if early_response is not None:
-                    await _send_full(writer, early_response)
-                    return
-
-            response = handler(request)
-
-            if inspect.isasyncgen(response):  # sse patch
-                try:
-                    async with aclosing(response) as gen:
-                        await _send_sse_headers(writer)
-                        async for event in gen:
-                            await _send_sse_event(writer, event)
-                except (
-                    asyncio.CancelledError,
-                    BrokenPipeError,
-                    ConnectionResetError,
-                    ConnectionAbortedError,
-                ):
-                    pass
-            else:
-                response = await response
-                for fn in _after_response:
-                    response = fn(request, response)
-                await _send_full(writer, response)
-
-        except Exception as e:
-            print(f"grug had problem: {e}")
-            traceback.print_exc()
+    try:
+        request = await _read_request(reader)
+        if request is None:
             await _send_full(
                 writer,
                 Response(
-                    "Server Error",
-                    HTTPStatus.INTERNAL_SERVER_ERROR,
-                    "text/plain",
-                    [],
+                    "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []
                 ),
             )
+            return
 
-        finally:
-            writer.close()
-            await writer.wait_closed()
+        handler, params = _find_handler(request.method, request.path)
+        request.params = params
 
+        if handler is None:  
+            # unregistered route, try static and if not conclusive, return 500
+            candidate = Path("static") / request.path.removeprefix("/static/")
+            candidate = candidate.resolve()
+            if (
+                request.method == "GET"
+                and candidate.is_relative_to(Path("static").resolve())
+                and candidate.is_file()
+            ):
+                # check if it's a cached asset
+                stat = candidate.stat()
+                etag = (
+                    f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+                )
+                if request.headers.get("if-none-match") == etag:
+                    await _send_full(
+                        writer,
+                        Response(
+                            "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
+                        ),
+                    )
+                else:
+                    mime, _ = mimetypes.guess_type(candidate.name)
+                    body = candidate.read_bytes()
+                    await _send_full(
+                        writer,
+                        Response(
+                            body,
+                            HTTPStatus.OK,
+                            mime or "application/octet-stream",
+                            [("ETag", etag)],
+                        ),
+                    )
+            else:
+                await _send_full(
+                    writer,
+                    Response(
+                        "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
+                    ),
+                )
+            return
+
+        for fn in _before_request:
+            early_response = fn(request)
+            if early_response is not None:
+                await _send_full(writer, early_response)
+                return
+
+        response = handler(request)
+
+        if inspect.isasyncgen(response):  # sse patch
+            try:
+                async with aclosing(response) as gen:
+                    await _send_sse_headers(writer)
+                    async for event in gen:
+                        await _send_sse_event(writer, event)
+            except (
+                asyncio.CancelledError,
+                BrokenPipeError,
+                ConnectionResetError,
+                ConnectionAbortedError,
+            ):
+                pass
+        else:
+            response = await response
+            for fn in _after_response:
+                response = fn(request, response)
+            await _send_full(writer, response)
+
+    except Exception as e:
+        print(f"grug had problem: {e}")
+        traceback.print_exc()
+        await _send_full(
+            writer,
+            Response(
+                "Server Error",
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                "text/plain",
+                [],
+            ),
+        )
+
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
+async def _serve(host, port, sock):
     # Bind either to a Unix domain socket or a TCP host/port.
     if sock:
         if os.name == "nt":
@@ -425,11 +413,11 @@ async def _serve(host, port, sock):
         if os.path.exists(sock):
             # Remove stale socket file left by previous unclean shutdown.
             os.unlink(sock)
-        server = await asyncio.start_unix_server(handle, path=sock)
+        server = await asyncio.start_unix_server(_handle, path=sock)
         os.chmod(sock, 0o660)
         print(f"grug listen on unix:{sock}")
     else:
-        server = await asyncio.start_server(handle, host, port)
+        server = await asyncio.start_server(_handle, host, port)
         # maybe a welcome message: 1 read the tao, 2 escape user input
         print(f"grug listen on http://{host}:{port}")
 
@@ -447,6 +435,7 @@ def _watch_for_changes():
     def iter_watched_files():
         yield from Path.cwd().glob("*.py")
         yield from Path("static").glob("**/*")
+        yield from Path.cwd().glob("reddwarf/*.py") # REMEMBER TO REMOVE THAT
 
     mtimes = {}
 
