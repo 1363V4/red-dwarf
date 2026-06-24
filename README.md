@@ -269,6 +269,16 @@ Very easy,
 request.cookies.get
 html(cookie={'key': value})
 
+**How do I add headers**
+
+headers=["Wait: What"]
+there's no reason to do it, so if you do it
+please be prepared
+
+**How to serve static templates**
+
+Just load them into memory!
+
 **Use a real framework**
 
 I prefer starlette for actually reading the code.

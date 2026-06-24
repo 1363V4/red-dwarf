@@ -21,22 +21,20 @@ with open(HTML_PATH / "index.html", "r") as f:
 def cookie_check(request):
     print("MMMMMMMMMMMMMMMMMMMMMMMM")
     pprint(request)
-    pass
-    # pprint(request)
 
 
 @rd.get("/")
 async def index(request):
     # with open(HTML_PATH / "index.html", "r") as f:
     #     PAGE_HOME = f.read()
-    return rd.html(PAGE_HOME)
+    return rd.html(PAGE_HOME, cookies={"laid": "up"})
 
 
 @rd.get("/docs")
 async def docs(request):
     with open(HTML_PATH / "docs.html", "r") as f:
         PAGE_DOCS = f.read()
-    return rd.html(PAGE_DOCS)
+    return rd.html(PAGE_DOCS, headers=["Wait: What"], cookies={"cbs": "bd", 'down': 0})
 
 
 @rd.get("/red")

@@ -1,8 +1,14 @@
 from http import cookies
 
-c = cookies.SimpleCookie("number=7")
+c = cookies.SimpleCookie()
+c['a'] = 1
+c['b'] = 2
 
-print(c)
+print("OK" + str(c) + c.output())
+
+x = ("ok") 
+x += ("bi")
+print(x)
 # import re
 
 # path_pattern = "/<_>"

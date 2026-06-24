@@ -1,7 +1,6 @@
 from .server import (
     after_response,
     before_request,
-    cookie,
     delete,
     empty,
     get,
@@ -20,7 +19,6 @@ from .server import (
 __all__ = (
     "after_response",
     "before_request",
-    "cookie",
     "delete",
     "empty",
     "get",

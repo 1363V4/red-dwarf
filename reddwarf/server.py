@@ -54,8 +54,16 @@ class Request:
     # Hence the default_factory
 
 
+# @dataclass(slots=True)
+# class Response:
+#     body: str
+#     status: str
+#     content_type: str
+#     headers: dict = field(default_factory=dict)
+#nah tuple better for unpacking
+
 Response = namedtuple(
-    "Response", ["body", "status", "content_type", "headers", "cookies"]
+    "Response", ["body", "status", "content_type", "headers"]
 )
 
 # And finally some control flow,
@@ -126,7 +134,7 @@ def delete(path):
 # REQUESTS
 
 
-def _read_signals(headers, method, query):
+def _read_signals(headers, method, query, body):
     # Datastar specific
     if "datastar-request" not in headers:
         return {}
@@ -134,7 +142,7 @@ def _read_signals(headers, method, query):
         data = query.get("datastar") or [""]
         data = data[0]
     elif headers.get("content-type") == "application/json":
-        data = request.body.decode("utf-8", errors="replace")
+        data = body.decode("utf-8", errors="replace")
     else:
         return {}
     return json.loads(data) if data else {}
@@ -182,8 +190,7 @@ async def _read_request(reader):
             value.strip()
         )  # headers are overwritten because we don't like shenanigans
 
-    signals = _read_signals(headers, method, query)
-    cookies = {}
+    cookies = {} # NOT DONE YET
 
     body = b""
     try:
@@ -192,6 +199,8 @@ async def _read_request(reader):
             body = await reader.readexactly(content_length)
     except ValueError:
         pass
+
+    signals = _read_signals(headers, method, query, body)
 
     return Request(method, raw_path, path, query, headers, body, signals, cookies)
 
@@ -203,14 +212,20 @@ def html(body, headers=None, cookies=None):
     # why sync and no async? can't remember
     c = SimpleCookie()
     if cookies:
-        for key, value in cookies:
+        print(cookies)
+        for key, value in cookies.items():
             c[key] = value  # nah
             # i either call _cookie or not
-    return Response(body, HTTPStatus.OK, "text/html", headers or {}, c)
+    if not headers:
+        headers = []
+    headers += [c.output()]
+    print("OOOOO")
+    print(headers)
+    return Response(body, HTTPStatus.OK, "text/html", headers)
 
 
 def empty():
-    return Response("", HTTPStatus.NO_CONTENT, None, [], {})
+    return Response("", HTTPStatus.NO_CONTENT, None, [])
 
 
 def patch(data):
@@ -221,7 +236,7 @@ def patch(data):
     return "\n".join(lines) + "\n\n"
 
 
-def cookie(
+def _cookie(
     key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
 ):
     c = SimpleCookie()
@@ -242,16 +257,17 @@ def cookie(
 
 
 async def _send_full(writer, response):
-    body, status, content_type, headers, cookies = response
-    header = (
-        f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
-    )
+    body, status, content_type, headers = response
+    header_buffer = [
+        f"HTTP/1.1 {status.value} {status.phrase}",
+        f"Content-Length: {len(body)}",
+    ]
     if content_type:
-        header += f"Content-Type: {content_type}\r\n"
-    print(headers)
-    for key, value in headers:
-        header += f"{key}: {value}\r\n"
-    header += "\r\n"
+        header_buffer += [f"Content-Type: {content_type}"]
+    for header in headers:
+        header_buffer += [f"{header}"]
+    header = "\r\n".join(header_buffer)
+    header += "\r\n\r\n"
 
     # ... if we talk performance, just put uvloop bro
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -262,18 +278,16 @@ async def _send_full(writer, response):
     await writer.drain()
 
 
-async def _send_sse_headers(writer, headers=None):
-    header = (
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/event-stream\r\n"
-        "Cache-Control: no-cache\r\n"
-        "Connection: keep-alive\r\n"
-    )
+async def _send_sse_headers(writer):
+    header_buffer = [
+        "HTTP/1.1 200 OK",
+        "Content-Type: text/event-stream",
+        "Cache-Control: no-cache",
+        "Connection: keep-alive",
+    ]
 
-    for k, v in headers or []:
-        header += f"{k}: {v}\r\n"
-    header += "\r\n"  # nécessaire ?
-
+    header = "\r\n".join(header_buffer)
+    header += "\r\n\r\n"
     writer.write(header.encode("utf-8"))
     await writer.drain()
 
@@ -308,18 +322,16 @@ async def _serve(host, port, sock):
                 await _send_full(
                     writer,
                     Response(
-                        "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", [], {}
+                        "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []
                     ),
                 )
                 return
 
             handler, params = _find_handler(request.method, request.path)
             request.params = params
-            # request.signals = _read_signals(request)
 
-            if (
-                handler is None
-            ):  # unregistered route, try static and if not conclusive, return 500
+            if handler is None:  
+                # unregistered route, try static and if not conclusive, return 500
                 candidate = Path("static") / request.path.removeprefix("/static/")
                 candidate = candidate.resolve()
                 if (
@@ -336,7 +348,7 @@ async def _serve(host, port, sock):
                         await _send_full(
                             writer,
                             Response(
-                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)], {}
+                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
                             ),
                         )
                     else:
@@ -349,14 +361,13 @@ async def _serve(host, port, sock):
                                 HTTPStatus.OK,
                                 mime or "application/octet-stream",
                                 [("ETag", etag)],
-                                {},
                             ),
                         )
                 else:
                     await _send_full(
                         writer,
                         Response(
-                            "Not Found", HTTPStatus.NOT_FOUND, "text/plain", [], {}
+                            "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
                         ),
                     )
                 return
@@ -398,7 +409,6 @@ async def _serve(host, port, sock):
                     HTTPStatus.INTERNAL_SERVER_ERROR,
                     "text/plain",
                     [],
-                    {},
                 ),
             )
 

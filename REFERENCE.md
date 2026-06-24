@@ -26,7 +26,6 @@ reload : bool : just the python files and the static folder
 ### html()
 ### empty()
 ### patch()
-### cookies()
 
 ## Routing
 
@@ -46,6 +45,7 @@ self.raw_path
 self.path
 self.query
 self.headers
+self.cookies
 self.body
 self.signals
 self.params
