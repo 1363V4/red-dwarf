@@ -257,3 +257,18 @@ which means they're likely better.
 We do the absolute minimum at the Python level
 and let Caddy's Go code and Chrome's C++
 do the heavy lifting.
+
+**What status code can I send?**
+
+200 for html.
+and the rest is classic.
+
+**How can I set cookies?**
+
+Very easy,
+request.cookies.get
+html(cookie={'key': value})
+
+**Use a real framework**
+
+I prefer starlette for actually reading the code.

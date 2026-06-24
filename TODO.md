@@ -1,8 +1,13 @@
 # TODO
 
 - cookies ? utiliser http cookie, overwrite (like headers)
-- - parse cookie in req
-- security fixes (slowloris, max body size)
+- et les attributs...
+- {'key': value}
+- {'key': [value]}
+- like this?
+- ou fuck it?
+- need to add to send full
+- parse cookie in req DONE
 - standard methods (isoler) (redirect, crash...)
 - before/after: sync ou async?
 - split le static file answer ouais
@@ -13,6 +18,15 @@
 - thank lea for prism
 - draft a website on legovh
 - package: uv add red_dwarf
+
+
+RESPONSES handled
+BAD_REQUEST
+NOT_MODIFIED
+NOT_FOUND
+INTERNAL_SERVER_ERROR
+
+PERFORMANCE: uvloop
 
 # NOTES
 

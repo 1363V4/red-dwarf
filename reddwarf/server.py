@@ -10,10 +10,11 @@ import signal
 import time
 import traceback
 from collections import namedtuple
-from contextlib import aclosing, suppress
+from contextlib import aclosing
 from dataclasses import dataclass, field
 from html import escape
-from http import HTTPStatus, cookies
+from http import HTTPStatus
+from http.cookies import SimpleCookie
 from pathlib import Path
 from pprint import pprint
 from urllib.parse import parse_qs, urlsplit
@@ -25,8 +26,8 @@ from urllib.parse import parse_qs, urlsplit
 # that is, functions which map requests to html responses
 # and this is all we'll do.
 
-_routes = []  # (method, compiled_regex, [param_names], handler_fn)
-# should be a namedtuple?
+Route = namedtuple("Route", ["method", "regex", "param_names", "handler"])
+_routes = []  # BEHOLD THE STATE
 
 
 @dataclass(slots=True)
@@ -37,12 +38,44 @@ class Request:
     query: dict
     headers: dict
     body: bytes
-    cookies: dict = field(default_factory=dict)
-    signals: dict = field(default_factory=dict)
+    signals: dict
+    cookies: dict
+    # Now I know what you are going to say
+    # "But cookies are included in headers!"
+    # Yes. But we design for convenience,
+    # sometimes that means redundancy,
+    # or straying from the spec.
+    # For the same reason,
+    # we're adding a cookie arg to Response.
     params: dict = field(default_factory=dict)
+    # params is the only parameter we can't infer from the Request content
+    # because we have to wait for the server to match queried path
+    # against registered routes.
+    # Hence the default_factory
 
 
-Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
+Response = namedtuple(
+    "Response", ["body", "status", "content_type", "headers", "cookies"]
+)
+
+# And finally some control flow,
+# functions to call before parsing a request
+# or after sending a response
+_before_request = []
+_after_response = []
+
+
+def before_request(fn):
+    # only put sync functions in there
+    # until i find a reason to async scan
+    _before_request.append(fn)
+    return fn
+
+
+def after_response(fn):
+    _after_response.append(fn)
+    return fn
+
 
 # SECURITY
 
@@ -50,7 +83,7 @@ MAX_BODY_SIZE = 1_048_576  # bytes
 MAX_HEADER_LINE = 8192  # bytes
 READ_TIMEOUT = 10  # s
 
-# ROUTING
+# ROUTES
 
 
 def _path_to_regex(path):
@@ -90,33 +123,17 @@ def delete(path):
     return _add_route("DELETE", path)
 
 
-_before_request = []
-_after_response = []
+# REQUESTS
 
 
-def before_request(fn):
-    # only put sync functions in there
-    # until i find a reason to async scan
-    _before_request.append(fn)
-    return fn
-
-
-def after_response(fn):
-    _after_response.append(fn)
-    return fn
-
-
-# REQUEST
-
-
-def _read_signals(request):
-    # we'll use it when handling requests but i write it here
-    if "datastar-request" not in request.headers:
+def _read_signals(headers, method, query):
+    # Datastar specific
+    if "datastar-request" not in headers:
         return {}
-    if request.method in ("GET", "DELETE"):
-        data = request.query.get("datastar") or [""]
+    if method in ("GET", "DELETE"):
+        data = query.get("datastar") or [""]
         data = data[0]
-    elif request.headers.get("content-type") == "application/json":
+    elif headers.get("content-type") == "application/json":
         data = request.body.decode("utf-8", errors="replace")
     else:
         return {}
@@ -165,6 +182,9 @@ async def _read_request(reader):
             value.strip()
         )  # headers are overwritten because we don't like shenanigans
 
+    signals = _read_signals(headers, method, query)
+    cookies = {}
+
     body = b""
     try:
         content_length = int(headers.get("content-length", 0))
@@ -173,37 +193,24 @@ async def _read_request(reader):
     except ValueError:
         pass
 
-    return Request(method, raw_path, path, query, headers, body)
+    return Request(method, raw_path, path, query, headers, body, signals, cookies)
 
 
-# RESPONSE
+# USER RESPONSES
 
 
-def html(body, status=HTTPStatus.OK, headers=None):
+def html(body, headers=None, cookies=None):
     # why sync and no async? can't remember
-    # header None because i'm afraid to [] in kw, but maybe i can
-    return Response(body, status, "text/html", list(headers or []))
+    c = SimpleCookie()
+    if cookies:
+        for key, value in cookies:
+            c[key] = value  # nah
+            # i either call _cookie or not
+    return Response(body, HTTPStatus.OK, "text/html", headers or {}, c)
 
 
 def empty():
-    return Response("", HTTPStatus.NO_CONTENT, None, [])
-
-
-def cookie(
-    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
-):
-    parts = [f"{key}={value}", f"Path={path}"]
-
-    if max_age is not None:
-        parts.append(f"Max-Age={max_age}")
-    if secure:
-        parts.append("Secure")
-    if httponly:
-        parts.append("HttpOnly")
-    if samesite:
-        parts.append(f"SameSite={samesite}")
-
-    return ("Set-Cookie", "; ".join(parts))
+    return Response("", HTTPStatus.NO_CONTENT, None, [], {})
 
 
 def patch(data):
@@ -214,23 +221,38 @@ def patch(data):
     return "\n".join(lines) + "\n\n"
 
 
-# APP
+def cookie(
+    key, value, path="/", max_age=None, secure=True, httponly=True, samesite="Lax"
+):
+    c = SimpleCookie()
+    c[key] = value
+    c[key]["path"] = path
+    if max_age:
+        c[key]["max-age"] = max_age
+    if secure:
+        c[key]["secure"] = True
+    if httponly:
+        c[key]["httponly"] = True
+    if samesite:
+        c[key]["samesite"] = samesite
+    return c.output()
+
+
+# WRITERS
 
 
 async def _send_full(writer, response):
-    body, status, content_type, headers = response
+    body, status, content_type, headers, cookies = response
     header = (
         f"HTTP/1.1 {status.value} {status.phrase}\r\nContent-Length: {len(body)}\r\n"
     )
     if content_type:
         header += f"Content-Type: {content_type}\r\n"
+    print(headers)
     for key, value in headers:
         header += f"{key}: {value}\r\n"
     header += "\r\n"
 
-    # we send static assets as bytes
-    # maybe i could make two function instead of checking for encoding, like _send_full_static/_send_full_file
-    # will have to test if it speeds boost
     # ... if we talk performance, just put uvloop bro
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     if not isinstance(body, bytes):
@@ -286,17 +308,14 @@ async def _serve(host, port, sock):
                 await _send_full(
                     writer,
                     Response(
-                        "grug not understand request",
-                        HTTPStatus.BAD_REQUEST,
-                        "text/plain",
-                        [],
+                        "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", [], {}
                     ),
                 )
                 return
 
             handler, params = _find_handler(request.method, request.path)
             request.params = params
-            request.signals = _read_signals(request)
+            # request.signals = _read_signals(request)
 
             if (
                 handler is None
@@ -317,12 +336,11 @@ async def _serve(host, port, sock):
                         await _send_full(
                             writer,
                             Response(
-                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
+                                "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)], {}
                             ),
                         )
                     else:
                         mime, _ = mimetypes.guess_type(candidate.name)
-                        print(candidate, mime)
                         body = candidate.read_bytes()
                         await _send_full(
                             writer,
@@ -331,16 +349,14 @@ async def _serve(host, port, sock):
                                 HTTPStatus.OK,
                                 mime or "application/octet-stream",
                                 [("ETag", etag)],
+                                {},
                             ),
                         )
                 else:
                     await _send_full(
                         writer,
                         Response(
-                            "grug not know this path",
-                            HTTPStatus.NOT_FOUND,
-                            "text/plain",
-                            [],
+                            "Not Found", HTTPStatus.NOT_FOUND, "text/plain", [], {}
                         ),
                     )
                 return
@@ -348,7 +364,7 @@ async def _serve(host, port, sock):
             for fn in _before_request:
                 early_response = fn(request)
                 if early_response is not None:
-                    await _send_full(writer, *early_response)
+                    await _send_full(writer, early_response)
                     return
 
             response = handler(request)
@@ -378,10 +394,11 @@ async def _serve(host, port, sock):
             await _send_full(
                 writer,
                 Response(
-                    "grug make accident",
+                    "Server Error",
                     HTTPStatus.INTERNAL_SERVER_ERROR,
                     "text/plain",
                     [],
+                    {},
                 ),
             )
 

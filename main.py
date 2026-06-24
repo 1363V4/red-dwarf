@@ -20,16 +20,16 @@ with open(HTML_PATH / "index.html", "r") as f:
 @rd.before_request
 def cookie_check(request):
     print("MMMMMMMMMMMMMMMMMMMMMMMM")
+    pprint(request)
     pass
     # pprint(request)
 
 
 @rd.get("/")
 async def index(request):
-    print("OK")
     # with open(HTML_PATH / "index.html", "r") as f:
     #     PAGE_HOME = f.read()
-    return rd.html(PAGE_HOME, headers=[rd.cookie("nusky", "vaati")])
+    return rd.html(PAGE_HOME)
 
 
 @rd.get("/docs")

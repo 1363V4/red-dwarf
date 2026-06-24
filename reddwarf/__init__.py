@@ -12,6 +12,11 @@ from .server import (
     run,
 )
 
+# Hello there!
+# This init file could stop there,
+# but ruff panics if it doesn't see the __all__
+# poor boy
+
 __all__ = (
     "after_response",
     "before_request",
