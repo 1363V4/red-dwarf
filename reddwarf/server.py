@@ -301,6 +301,9 @@ async def _handle(reader, writer):
     # this is a callback after the connection has been initialized
     # reader is a StreamReader object, 
     # writer is a StreamWriter object.
+    # this is where everything happens:
+    # we read from the stream, parse it into a "request"
+    # find its "route" and write stuff
 
     try:
         request = await _read_request(reader)
@@ -316,7 +319,13 @@ async def _handle(reader, writer):
         handler, params = _find_handler(request.method, request.path)
         request.params = params
 
-        if handler is None:  
+        for fn in _before_request:
+            early_response = fn(request)
+            if early_response is not None:
+                await _send_full(writer, early_response)
+                return
+
+        if handler is None:
             # unregistered route, try static and if not conclusive, return 500
             candidate = Path("static") / request.path.removeprefix("/static/")
             candidate = candidate.resolve()
@@ -357,12 +366,6 @@ async def _handle(reader, writer):
                     ),
                 )
             return
-
-        for fn in _before_request:
-            early_response = fn(request)
-            if early_response is not None:
-                await _send_full(writer, early_response)
-                return
 
         response = handler(request)
 
