@@ -4,11 +4,15 @@ c = cookies.SimpleCookie()
 c['a'] = 1
 c['b'] = 2
 
-print("OK" + str(c) + c.output())
+c = cookies.SimpleCookie('cbs=bd; down=0; laid=up',)
+print(c)
 
-x = ("ok") 
-x += ("bi")
-print(x)
+for x, y in c.items():
+    print(x, y)
+    print(x, y.value)
+    print(x, type(x))
+    print(y, type(y))
+
 # import re
 
 # path_pattern = "/<_>"

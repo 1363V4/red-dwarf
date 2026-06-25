@@ -151,6 +151,7 @@ def _read_signals(headers, method, query, body):
 async def _read_request(reader):
     """
     unsure if fit for http2/3
+    should be called _parse_request? but there's a read timeout
     """
     try:
         async with asyncio.timeout(READ_TIMEOUT):
@@ -190,7 +191,14 @@ async def _read_request(reader):
             value.strip()
         )  # headers are overwritten because we don't like shenanigans
 
-    cookies = {} # NOT DONE YET
+    cookies = {}
+    if cookie := headers.get('cookie'):
+        try:
+            c = SimpleCookie(cookie)
+            for key, morsel in c.items():
+                cookies[key] = morsel.value
+        except Exception as e:
+            pass
 
     body = b""
     try:
