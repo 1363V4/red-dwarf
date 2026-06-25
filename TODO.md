@@ -1,14 +1,12 @@
 # TODO
 
 - ok cookie je pense que c'est bon, faudra tester avec sse
-- ah shit, before et after marche pas sur les static assets?
 - before/after: sync ou async?
 - standard methods (isoler) (redirect, crash...)
-- split le static file answer ouais
-- split en général
+- redirect
+- logging
 - cors, vérifier si c'est pas fait par caddy
 - is it worth checking static first?
-- fuck le reload marche pas sur windows??? ah nan c'est que j'ai changé en module
 
 - thank lea for prism
 - draft a website on legovh

@@ -45,11 +45,21 @@
                     data-on-signal-patch="console.log(patch)"
                     data-on:datastar-signal-patch="console.log(3)"
                 >
-                    Click to get time from server
+                    Click to get time from server (I should also add a global counter)
                 </div>
                 <div data-init="console.log(0)" id="time">
                     Time will appear here
                 </div>
+            </div>
+            <hr class="gmb" />
+            <div class="gc">
+                <p>Features</p>
+                <ul>
+                    <li>No dependencies</li>
+                    <li>Auto-reload</li>
+                    <li>Easy to learn</li>
+                    <li>Powerful</li>
+                </ul>
             </div>
             <hr class="gmb" />
             <div class="gc">
@@ -80,7 +90,7 @@ async def refresh(request):
                     <code>
 That's it!
 
-Red Dwarf is made of 1 class and 5 functions.
+Red Dwarf is made of 1 class and 3 functions.
 You'll learn it in no time!</code>
                     </pre>
                     </li>
@@ -106,6 +116,10 @@ You can develop almost any website with it!</code>
                 <li><u>No</u> WebSockets</li>
                 <li><u>No</u> compression</li>
                 <li><u>No</u> templates</li>
+                <li><u>No</u> error handlers</li>
+                <li><u>No</u> telemetry</li>
+                <li><u>No</u> TLS</li>
+                <li><u>No</u> CORS</li>
                 <li>...</li>
             </ul>
             <hr class="gmb" />

@@ -54,14 +54,6 @@ class Request:
     # Hence the default_factory
 
 
-# @dataclass(slots=True)
-# class Response:
-#     body: str
-#     status: str
-#     content_type: str
-#     headers: dict = field(default_factory=dict)
-#nah tuple better for unpacking
-
 Response = namedtuple(
     "Response", ["body", "status", "content_type", "headers"]
 )
@@ -244,6 +236,8 @@ def patch(data):
 
     return "\n".join(lines) + "\n\n"
 
+def redirect(location):
+    return Response("", HTTPStatus.FOUND, None, [("Location", location)])
 
 # WRITERS
 
@@ -289,7 +283,7 @@ async def _send_sse_event(writer, event):
     await writer.drain()
 
 
-# APP
+# SERVER
 
 
 def _find_handler(method, path):
@@ -304,6 +298,7 @@ def _find_handler(method, path):
             params = dict(zip(param_names, m.groups()))  # {"id": "42", ...}
             return fn, params
     return None, {}
+
 
 async def _handle(reader, writer):
     # this is a callback after the connection has been initialized
@@ -441,6 +436,7 @@ async def _serve(host, port, sock):
     async with server:
         await server.serve_forever()
 
+# APP
 
 def _watch_for_changes():
     def iter_watched_files():

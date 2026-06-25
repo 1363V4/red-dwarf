@@ -8,6 +8,7 @@ from .server import (
     patch,
     post,
     put,
+    redirect,
     run,
 )
 
@@ -26,5 +27,6 @@ __all__ = (
     "patch",
     "post",
     "put",
+    "redirect",
     "run",
 )

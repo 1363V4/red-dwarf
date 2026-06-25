@@ -30,7 +30,7 @@ h1 {
     margin-bottom: var(--l);
 }
 
-#tagline {
+#tagline small {
     font-style: italic;
 }
 
