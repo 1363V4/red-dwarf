@@ -83,6 +83,14 @@ MAX_BODY_SIZE = 1_048_576  # bytes
 MAX_HEADER_LINE = 8192  # bytes
 READ_TIMEOUT = 10  # s
 
+# LOGGING
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+)
+logger = logging.getLogger("RD")
+
 # ROUTES
 
 
@@ -159,7 +167,7 @@ async def _read_request(reader):
         return None
 
     method, raw_path = parts[0], parts[1]
-    print(f"grug see {method} request on {escape(raw_path)}")  # telemetry ftw
+    logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
 
     split = urlsplit(raw_path)
     path = split.path or "/"
@@ -392,7 +400,7 @@ async def _handle(reader, writer):
             await _send_full(writer, response)
 
     except Exception as e:
-        print(f"grug had problem: {e}")
+        logger.error(f"Error in handling request: {e}")
         traceback.print_exc()
         await _send_full(
             writer,
@@ -414,18 +422,18 @@ async def _serve(host, port, sock):
     if sock:
         if os.name == "nt":
             raise OSError(
-                "grug on windows — unix socket not available, use host+port instead"
+                "Are you on Windows? — unix socket not available, use host+port instead"
             )
         if os.path.exists(sock):
             # Remove stale socket file left by previous unclean shutdown.
             os.unlink(sock)
         server = await asyncio.start_unix_server(_handle, path=sock)
         os.chmod(sock, 0o660)
-        print(f"grug listen on unix:{sock}")
+        logger.info(f"Listening on socket:{sock}")
     else:
         server = await asyncio.start_server(_handle, host, port)
         # maybe a welcome message: 1 read the tao, 2 escape user input
-        print(f"grug listen on http://{host}:{port}")
+        logger.info(f"Listening on http://{host}:{port}")
 
     # SIGTERM is common in containers/process managers.
     # Closing the server lets `serve_forever()` exit cleanly.
@@ -457,7 +465,7 @@ def _watch_for_changes():
             if key not in mtimes:
                 mtimes[key] = mtime
             elif mtime > mtimes[key]:
-                return file_path
+                return file_path.name
 
 
 def _run_once(host, port, sock):
@@ -486,11 +494,11 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
                 child.start()
 
                 changed = _watch_for_changes()
-                print(f"grug see change in {changed}, restarting...")
+                logger.info("Change detected in %s, restarting...", changed)
 
                 child.terminate()
                 child.join()
         else:
             asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:
-        print("grug: out.")
+        logger.info("Server shutdown.")

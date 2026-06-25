@@ -2,10 +2,7 @@
 
 - ok cookie je pense que c'est bon, faudra tester avec sse
 - before/after: sync ou async?
-- standard methods (isoler) (redirect, crash...)
-- redirect
-- logging
-- cors, vérifier si c'est pas fait par caddy
+- cors, vérifier si c'est pas fait par caddy, a priori oui
 - is it worth checking static first?
 
 - thank lea for prism

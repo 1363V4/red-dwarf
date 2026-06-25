@@ -19,8 +19,7 @@ with open(HTML_PATH / "index.html", "r") as f:
 
 @rd.before_request
 def cookie_check(request):
-    print("MMMMMMMMMMMMMMMMMMMMMMMM")
-    pprint(request)
+    pass
 
 
 @rd.get("/")
