@@ -218,6 +218,8 @@ async def _read_request(reader):
 
 def html(body, headers=None, cookies=None):
     # why sync and no async? can't remember
+    if not headers:
+        headers = []
     if cookies:
         c = SimpleCookie()
         for key, value in cookies.items():
@@ -227,9 +229,7 @@ def html(body, headers=None, cookies=None):
             c[key]["secure"] = True
             c[key]["httponly"] = True
             c[key]["samesite"] = "Lax"
-    if not headers:
-        headers = []
-    headers += [c]
+        headers += [c]
     return Response(body, HTTPStatus.OK, "text/html", headers)
 
 
@@ -245,7 +245,7 @@ def patch(data):
     return "\n".join(lines) + "\n\n"
 
 def redirect(location):
-    return Response("", HTTPStatus.FOUND, None, [("Location", location)])
+    return Response("", HTTPStatus.TEMPORARY_REDIRECT, None, [f"Location: {location}"])
 
 # WRITERS
 

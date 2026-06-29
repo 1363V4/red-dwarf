@@ -234,6 +234,10 @@ Not yet, no.
 
 Well you can change your code and the server will restart, but... why do that?
 
+**Is it secure?**
+
+bitcoin style encryption
+
 **Why is there no compression?**
 
 We let the reverse proxy do it.

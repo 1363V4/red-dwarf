@@ -1,6 +1,6 @@
 # from html import escape
 
-# import other_site
+import other_site
 from importlib import import_module
 from pathlib import Path
 from pprint import pprint
@@ -13,14 +13,19 @@ HTML_PATH = Path().cwd() / "static" / "html"
 
 import_module("other_site")
 
-with open(HTML_PATH / "index.html", "r") as f:
+with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
     PAGE_HOME = f.read()
 
 
 @rd.before_request
 def cookie_check(request):
+    pprint(request)
     pass
 
+# @rd.after_response
+# def log(request, response):
+#     print(f"Another successful response on {request.path}!")
+#     print(response)
 
 @rd.get("/")
 async def index(request):
@@ -41,6 +46,11 @@ async def red(request):
     with open(HTML_PATH / "red.html", "r") as f:
         PAGE_RED = f.read()
     return rd.html(PAGE_RED)
+
+
+@rd.get("/redi")
+async def redi(request):
+    return rd.redirect("/")
 
 
 @rd.post("/time")

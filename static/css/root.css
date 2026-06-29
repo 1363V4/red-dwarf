@@ -52,6 +52,10 @@ footer {
     pointer-events: none;
 }
 
-code {
-    font-size: var(--s);
+.gmb {
+    margin-bottom: var(--l);
+}
+
+li {
+    margin-block: var(--xs);
 }

@@ -26,13 +26,14 @@ reload : bool : just the python files and the static folder
 ### html()
 ### empty()
 ### patch()
+### redirect()
 
 ## Routing
 
 ### add/...
 ### before/after
 
-before is if route found (wont fire for assets)
+before is if route found (wont fire for assets... now will)
 you can send response and it will cancel
 after has response
 

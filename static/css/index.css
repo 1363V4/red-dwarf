@@ -26,10 +26,6 @@ h1 {
     }
 }
 
-.gmb {
-    margin-bottom: var(--l);
-}
-
 #tagline small {
     font-style: italic;
 }

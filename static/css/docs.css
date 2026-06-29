@@ -14,6 +14,7 @@ h2 {
     font-family: "slkscr";
     background-color: var(--white);
     color: var(--black);
+    margin-block: var(--m);
 }
 
 header {
@@ -24,15 +25,18 @@ header {
     background-color: var(--blue);
     height: fit-content;
     div:not(#burger) {
+        z-index: 1;
         &:not([opened]) {
             display: none;
         }
+    }
+    p {
+        width: fit-content;
     }
 }
 
 #burger {
     width: 100%;
-    z-index: 1;
     img {
         width: var(--m);
         cursor: pointer;
@@ -43,7 +47,7 @@ header {
 
 #main_panel {
     padding-inline: var(--m);
-    * {
+    *:not(".gmb") {
         margin-bottom: var(--s);
     }
 }

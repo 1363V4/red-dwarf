@@ -6,6 +6,7 @@
         <link rel="icon" href="/static/img/red_dwarf.png" />
         <link rel="stylesheet" href="/static/css/docs.css" />
         <script type="module" src="/static/js/datastar.js"></script>
+        <script type="module" src="/static/js/prism.js"></script>
     </head>
     <body class="gf">
         <header id="side_panel" class="gz gp-xxs" data-signals="{open: false}">
@@ -16,11 +17,13 @@
                 />
             </div>
             <div data-attr:opened="$open">
-                <p>OK</p>
-                <p>OK</p>
-                <p>OK</p>
-                <p>why are u here</p>
+                <p><a href="#routes">Routes</a></p>
+                <p><a href="#requests">Requests</a></p>
+                <p><a href="#responses">Responses</a></p>
+                <p><a href="#app">App</a></p>
+                <p><a href="#before">Before you go</a></p>
             </div>
+
         </header>
         <div id="main_panel">
             <h1>Getting Started</h1>
@@ -36,10 +39,10 @@
             <p>or whatever stario was doing</p>
             <p>and well, the idea is to show html and patch</p>
             <p>or maybe a todo app?</p>
+            <p>A METTRE AILLEURS</p>
             <hr />
             <h1>Reference</h1>
-            <h2>Routing</h2>
-            <p>the four methods: @get, @post, @put and @delete</p>
+            <h2 id="routes">Routes</h2>
             <p>
                 Define routes by writing an async function and slapping a
                 decorator on top of it.
@@ -64,20 +67,19 @@ async def rename_user(request):
 
 @rd.delete("/remove_user")
 async def remove_user(request):
-    return rd.html(...)
-                </pre>
-            </code>
-            <p>You can also use parameters in your routes as such: <code>@rd.get("docs/<folder_id>/<document_id>")</code> and get back these values in your handler (see the "Request" chapter)</p>
-            <h2>Requests</h2>
+    return rd.html(...)</code>
+            </pre>
+            <p class="gmb">You can also use parameters in your routes and get back these values in your handler (see the "Requests" chapter)</p>
+            <h2 id="requests">Requests</h2>
             <p>Request is the only stateful object in Red Dwarf.</p>
             <p>
                 When Red Dwarf receives a request, it parses it for you into a
-                Request object that you can freely access. Most parameters are
-                strings or dicts.
+                Request object that you can freely access. 
             </p>
+            <p>Note: All the attributes are strings or dicts.</p>
             <pre class="language-python">
             <code>
-@rd.get("/docs/<folder_id>/<document_id>")
+@rd.get("/docs/&lt;folder_id&gt;/&lt;document_id&gt;")
 async def serve_document(request):
     print(request.method)
     # 'GET'
@@ -88,38 +90,97 @@ async def serve_document(request):
     print(request.params)
     # {'folder_id': 'folder18', 'document_id': 'document4'}
     print(request.query)
-    # {'page': ['2']}
+    # {'page': ['42']}
     print(request.headers)
     # {'host': '...', ...}
     print(request.body)
     # b''
+    print(request.cookies)
+    # {'user_id': ...}
     print(request.signals)
     # {'theme': 'light'}
-    return rd.html(...)
-            </code>
+    return rd.html(...)</code>
             </pre>
-            <p>Datastar signals are automatically parsed.</p>
-            <p>I should parse cookies I guess (TBD)</p>
-            <p>
-                You can modify the Request but there's no reason to do it so
-                don't :)
-            </p>
-            <h4>request.method</h4>
-            <p>get post etc</p>
-            <h3>request.raw_path</h3>
-            <p>get post etc</p>
-            <h3>request.path</h3>
-            <p>get post etc</p>
-            <h3>etc</h3>
-            <p>etc</p>
-            <h2>Responses</h2>
-            <p>...html et al</p>
-            <h3>html()</h3>
-            <p>...html et al</p>
-            <h2>run()</h2>
-            <p>...options</p>
-            <h2>Other</h2>
-            <p>...before/after request</p>
+            <p>As you see, Datastar signals are automatically parsed.</p>
+            <h2 id="responses">Responses</h2>
+            <p>In Red Dwarf, there are only 4 possible responses.</p>
+            <p>Most of the time, you'll answer with <code>rd.html()</code>.</p>
+            <pre class="language-python">
+            <code>
+@rd.get("/")
+async def home(request):
+    return rd.html(&lt;h1&gt;Hello World!&lt;/h1&gt;)
+
+@rd.get("/red")
+async def red(request):
+    headers = ["X-Accel-Buffering: No"]
+    user_id = "123"
+    return rd.html(
+        &lt;h1&gt;Hello World!&lt;/h1&gt;
+        headers=headers,
+        cookies={'user_id': user_id}
+    )</code>
+            </pre>
+            <p>You can also use <code>rd.empty()</code> to return an empty response (useful in CQRS patterns).</p>
+            <pre class="language-python">
+            <code>
+@rd.get("/v1")
+async def old_version(request):
+    return rd.redirect("/v2")
+
+@rd.post("/command")
+async def handle_command(request):
+    user_id = request.cookies.get("user_id")
+    if user_id:
+        database.process(user_id)
+    return rd.empty()</code>
+            </pre>
+            <p>Finally, you can use <code>rd.patch()</code> to any Datastar request.</p>
+            <pre class="language-python">
+            <code>
+@rd.get("/sse")
+async def sse_stream(request):
+    async for message in pubsub_channel():
+        yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
+            </pre>
+            <p>The HTML in <code>rd.patch()</code> will replace the one on the page. Magic!</p>
+            <h2 id="app">App</h2>
+            <p>That's all!</p>
+            <p>You now know how to use Red Dwarf.</p>
+            <p>The last thing you need to do is launch your app</p>
+            <pre class="language-python">
+            <code>
+if __name__ == "__main__":
+    rd.run(reload=True)</code>
+            </pre>
+            <p>You're good to go!</p>
+            <p>By default, Red Dwarf will serve on localhost.</p>
+            <p>You can also specify a custom host adress, or use a Unix port if you prefer.</p>
+            <p>Note: During development, you can use <code>reload=True</code>. It will detect any change in Python files or in your static folder, and will relaunch the server.</p>
+            <pre class="language-python">
+            <code>
+if __name__ == "__main__":
+    rd.run(sock="/unix.sock", reload=True)</code>
+            </pre>
+            <h2 id="before">Before you go</h2>
+            <p>One last thing.</p>
+            <p>Red Dwarf gives you useful <code>before_request</code> / <code>after_response</code> decorators.</p>
+            <p>It's... pretty straightforward.</p>
+            <p>Note: With <code>before_request</code>, you can return early.</p>
+            <pre class="language-python">
+            <code>
+@rd.before_request
+def cookie_check(request):
+    if not request.get("user_id"):
+        return rd.redirect("/")
+
+@rd.after_response
+def log(request):
+    logger.info("Another successful response on f{request.path}!")</code>
+            </pre>
+            <h2>Off you go!</h2>
+            <p>You can continue by reading the FAQ, the Cookbook or the Essays (links)</p>
+            <p>Go build something!</p>
         </div>
     </body>
     <footer>2026 - Red Dwarf - Handcoded with love</footer>

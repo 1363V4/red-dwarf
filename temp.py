@@ -1,17 +1,22 @@
-from http import cookies
+from html import escape
 
-c = cookies.SimpleCookie()
-c['a'] = 1
-c['b'] = 2
+x = escape("<div id='message'>{message}</div>")
+print(x)
 
-c = cookies.SimpleCookie('cbs=bd; down=0; laid=up',)
-print(c)
+# from http import cookies
 
-for x, y in c.items():
-    print(x, y)
-    print(x, y.value)
-    print(x, type(x))
-    print(y, type(y))
+# c = cookies.SimpleCookie()
+# c['a'] = 1
+# c['b'] = 2
+
+# c = cookies.SimpleCookie('cbs=bd; down=0; laid=up',)
+# print(c)
+
+# for x, y in c.items():
+#     print(x, y)
+#     print(x, y.value)
+#     print(x, type(x))
+#     print(y, type(y))
 
 # import re
 

@@ -1,5 +1,9 @@
 # TODO
 
+- probleme merde: response est consumé. faut savoir si je veux async partout.
+
+- en vrai patch et script je peux 
+
 - ok cookie je pense que c'est bon, faudra tester avec sse
 - before/after: sync ou async?
 - cors, vérifier si c'est pas fait par caddy, a priori oui
@@ -10,11 +14,24 @@
 - package: uv add red_dwarf
 
 
+ESSAYS
+use a real framework
+the best datastar (is no datastar)
+the best python
+
 RESPONSES handled
 BAD_REQUEST
 NOT_MODIFIED
+FOUND (?) TEMPORARY_REDIRECT (like starlette)
 NOT_FOUND
 INTERNAL_SERVER_ERROR
+
+
+DOC
+- faq
+- cookbook
+- examples
+- essays
 
 PERFORMANCE: uvloop
 
