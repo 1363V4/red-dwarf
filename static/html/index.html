@@ -12,10 +12,10 @@
         <main>
             <div class="gc">
                 <h1 class="gt-xl gmb">RED DWARF</h1>
-                <img class="gmb" src="/static/img/logo_128.png" />
                 <p id="tagline" class="gmb">
                     The <small class="gt-s">smallest</small> Python server
                 </p>
+                <img class="gmb" src="/static/img/logo_128.png" />
                 <div id="uv" class="gz gmb">
                     <code class="gp-s">uv add red-dwarf</code>
                 </div>
@@ -42,21 +42,21 @@
                     data-on:pointerdown="@post('/time')"
                     data-indicator:_fetching
                     data-attr:disabled="$_fetching"
-                    data-on-signal-patch="console.log(patch)"
-                    data-on:datastar-signal-patch="console.log(3)"
                 >
-                    Click to get time from server (I should also add a global counter)
+                    Click to get time from server
                 </div>
-                <div data-init="console.log(0)" id="time">
+                <div id="time">
                     Time will appear here
+                </div>
+                <div id="brag">
                 </div>
             </div>
             <hr class="gmb" />
             <div class="gc gmb">
                 <ul>
                     <li>⚒️ No dependencies</li>
-                    <li>⚒️ Auto-reload</li>
                     <li>⚒️ Easy to learn</li>
+                    <li>⚒️ Auto-reload</li>
                     <li>⚒️ Powerful</li>
                 </ul>
             </div>

@@ -1,6 +1,7 @@
 # from html import escape
 
 import other_site
+import json
 from importlib import import_module
 from pathlib import Path
 from pprint import pprint
@@ -16,19 +17,27 @@ import_module("other_site")
 with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
     PAGE_HOME = f.read()
 
+with open(HTML_PATH / "faq.html", "r", encoding="utf8") as f:
+    PAGE_FAQ = f.read()
 
-@rd.before_request
-def cookie_check(request):
-    pprint(request)
-    pass
+with open("database.json") as db:
+    database = json.load(db)
+
+# @rd.before_request
+# def cookie_check(request):
+#     pprint(request)
+#     pass
 
 # @rd.after_response
 # def log(request, response):
 #     print(f"Another successful response on {request.path}!")
+#     response.body = response.body.replace("RED", "BLUE")
 #     print(response)
+#     return response
 
 @rd.get("/")
 async def index(request):
+    print("BdE")
     # with open(HTML_PATH / "index.html", "r") as f:
     #     PAGE_HOME = f.read()
     return rd.html(PAGE_HOME, cookies={"laid": "up"})
@@ -47,6 +56,10 @@ async def red(request):
         PAGE_RED = f.read()
     return rd.html(PAGE_RED)
 
+@rd.get("/faq")
+async def faq(request):
+    return rd.html(PAGE_FAQ)
+
 
 @rd.get("/redi")
 async def redi(request):
@@ -57,7 +70,12 @@ async def redi(request):
 async def time(request):
     time = asctime()
     # hmmm ptet script est bien
-    yield rd.patch(f'<div id=time data-init="console.log(0)">{time}</div>')
+    # ajouter à un counter persisté
+    database["asks"] += 1
+    with open("database.json", "w") as db:
+        json.dump(database, db)
+    yield rd.patch(f'<div id=time>{time}</div>')
+    yield rd.patch(f'<div id=brag>I\'ve been asked {database["asks"]} times</div>')
 
 
 @rd.get("/docs/<folder_id>/<document_id>")
@@ -122,6 +140,7 @@ async def sse_stream(request):
 #             print("cleanup")
 
 if __name__ == "__main__":
+    print(database)
     rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")
 

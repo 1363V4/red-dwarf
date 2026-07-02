@@ -61,6 +61,14 @@ pre {
     line-break: anywhere;
 }
 
+details {
+    margin-block: var(--s);
+    text-align: center;
+    summary {
+        margin-block: var(--s);
+    }
+}
+
 /*
 * {
     border: 1px dotted red;

@@ -59,10 +59,13 @@ Response = namedtuple(
 )
 
 # And finally some control flow,
-# functions to call before parsing a request
-# or after sending a response
+# async functions to call before parsing a request
+# or after sending a response.
+# _after_response functions will not run on bad requests.
+# _after_event will run after sse patch.
 _before_request = []
 _after_response = []
+_after_event = []
 
 
 def before_request(fn):
@@ -314,7 +317,7 @@ async def _handle(reader, writer):
     # writer is a StreamWriter object.
     # this is where everything happens:
     # we read from the stream, parse it into a "request"
-    # find its "route" and write stuff
+    # find its "route" and write stuff. done.
 
     try:
         request = await _read_request(reader)
@@ -384,6 +387,8 @@ async def _handle(reader, writer):
             try:
                 async with aclosing(response) as gen:
                     await _send_sse_headers(writer)
+                    for fn in _after_event:
+                        event = await fn(request, event)
                     async for event in gen:
                         await _send_sse_event(writer, event)
             except (
@@ -396,7 +401,9 @@ async def _handle(reader, writer):
         else:
             response = await response
             for fn in _after_response:
-                response = fn(request, response)
+                modified_response = fn(request, response)
+                if modified_response is not None:
+                    response = modified_response
             await _send_full(writer, response)
 
     except Exception as e:

@@ -1,11 +1,14 @@
 # TODO
 
-- probleme merde: response est consumé. faut savoir si je veux async partout.
+- faut savoir si je veux async partout.
+- after event??? ON AIME???
+- merde, je peux pas modifier réponse. j'autorise ou pas ?
+- pour répondre à ces trois questions je dois commencer les essais. pas le choix.
+- merde: quand je change main, ça reload mal
 
-- en vrai patch et script je peux 
+- en vrai patch et script je peux (non)
 
 - ok cookie je pense que c'est bon, faudra tester avec sse
-- before/after: sync ou async?
 - cors, vérifier si c'est pas fait par caddy, a priori oui
 - is it worth checking static first?
 
@@ -14,24 +17,14 @@
 - package: uv add red_dwarf
 
 
-ESSAYS
-use a real framework
-the best datastar (is no datastar)
-the best python
-
-RESPONSES handled
-BAD_REQUEST
-NOT_MODIFIED
-FOUND (?) TEMPORARY_REDIRECT (like starlette)
-NOT_FOUND
-INTERNAL_SERVER_ERROR
-
+SIDEBAR
+FUNNIER FAQ
 
 DOC
 - faq
-- cookbook
-- examples
 - essays
+- cookbook...?
+- examples
 
 PERFORMANCE: uvloop
 
