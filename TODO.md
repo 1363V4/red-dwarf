@@ -17,6 +17,7 @@
 - package: uv add red_dwarf
 
 - manque les titres des pages
+- manque les cartes de sharing
 
 SIDEBAR
 FUNNIER FAQ

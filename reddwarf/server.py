@@ -65,6 +65,9 @@ _before_request = []
 _after_response = []
 _after_event = []
 
+# on hold for now...
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
 
 def before_request(fn):
     # only put sync functions in there
@@ -90,6 +93,7 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
 )
 logger = logging.getLogger("RD")
+
 
 # ROUTES
 
@@ -327,6 +331,42 @@ async def _handle(reader, writer):
             )
             return
 
+        if request.method == "GET" and request.path.startswith("/static/"):
+            candidate = STATIC_DIR / request.path.removeprefix("/static/")
+            candidate = candidate.resolve()
+
+            if candidate.is_relative_to(STATIC_DIR) and candidate.is_file():
+                stat = candidate.stat()
+                etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+
+                if request.headers.get("if-none-match") == etag:
+                    await _send_full(
+                        writer,
+                        Response("", HTTPStatus.NOT_MODIFIED, None, [f"ETag: {etag}"]),
+                    )
+                else:
+                    mime, _ = mimetypes.guess_type(candidate.name)
+                    # Fallback MIME types, maybe i'm missing some
+                    mime = mime or {
+                        '.css': 'text/css',
+                        '.js': 'application/javascript',
+                        '.svg': 'image/svg+xml',
+                        '.png': 'image/png',
+                    }.get(candidate.suffix.lower(), 'application/octet-stream')
+
+                    body = candidate.read_bytes()
+                    await _send_full(
+                        writer,
+                        Response(body, HTTPStatus.OK, mime, [f"ETag: {etag}"]),
+                    )
+                return
+            else:
+                await _send_full(
+                    writer,
+                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+                )
+                return
+
         handler, params = _find_handler(request.method, request.path)
         request.params = params
 
@@ -337,39 +377,10 @@ async def _handle(reader, writer):
                 return
 
         if handler is None:
-            # unregistered route, try static and if not conclusive, return 500
-            candidate = Path("static") / request.path.removeprefix("/static/")
-            candidate = candidate.resolve()
-            if (
-                request.method == "GET"
-                and candidate.is_relative_to(Path("static").resolve())
-                and candidate.is_file()
-            ):
-                # check if it's a cached asset
-                stat = candidate.stat()
-                etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
-                if request.headers.get("if-none-match") == etag:
-                    await _send_full(
-                        writer,
-                        Response("", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]),
-                    )
-                else:
-                    mime, _ = mimetypes.guess_type(candidate.name)
-                    body = candidate.read_bytes()
-                    await _send_full(
-                        writer,
-                        Response(
-                            body,
-                            HTTPStatus.OK,
-                            mime or "application/octet-stream",
-                            [("ETag", etag)],
-                        ),
-                    )
-            else:
-                await _send_full(
-                    writer,
-                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
-                )
+            await _send_full(
+                writer,
+                Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+            )
             return
 
         response = handler(request)
@@ -445,7 +456,10 @@ async def _serve(host, port, sock):
             signal.signal(signal.SIGTERM, lambda *_: server.close())
 
     async with server:
-        await server.serve_forever()
+        try:
+            await server.serve_forever()
+        except asyncio.CancelledError: # expected on shutdown
+            pass
 
 
 # APP

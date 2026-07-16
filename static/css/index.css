@@ -48,6 +48,7 @@ h1 {
     text-decoration: none;
     box-shadow: 0px 0px 2px var(--code);
     cursor: pointer;
+    user-select: none;
 }
 
 .button_2 {
@@ -60,6 +61,7 @@ h1 {
         width: var(--m);
     }
     cursor: pointer;
+    user-select: none;
 }
 
 #time {

@@ -24,6 +24,11 @@ main {
     }
 }
 
+code {
+	color: var(--code);
+	font-size: inherit;
+}
+
 details {
     margin-block: var(--s);
     text-align: center;

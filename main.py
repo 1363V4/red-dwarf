@@ -2,17 +2,24 @@
 
 # import other_site
 import json
-from importlib import import_module
 from pathlib import Path
 from pprint import pprint
 from time import asctime
+import logging
 
 # from uuid import uuid4
 import reddwarf as rd
 
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+)
+logger = logging.getLogger("MAIN")
+
+
+
 HTML_PATH = Path().cwd() / "static" / "html"
 
-import_module("other_site")
 
 with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
     PAGE_HOME = f.read()
@@ -46,7 +53,7 @@ with open("database.json") as db:
 
 @rd.get("/")
 async def index(request):
-    print("BdE")
+    logger.info("Hello there")
     # with open(HTML_PATH / "index.html", "r") as f:
     #     PAGE_HOME = f.read()
     return rd.html(PAGE_HOME, cookies={"laid": "up"})
@@ -99,25 +106,25 @@ async def time(request):
     yield rd.patch(f'<div id=brag>I\'ve been asked {database["asks"]} times</div>')
 
 
-@rd.get("/docs/<folder_id>/<document_id>")
-async def serve_document(request):
-    print(request.method)
-    # 'GET'
-    print(request.raw_path)
-    # '/docs/folder18/document4?page=42'
-    print(request.path)
-    # '/docs/folder18/document4'
-    print(request.params)
-    # {'folder_id': 'folder18', 'document_id': 'document4'}
-    print(request.query)
-    # {'page': ['2']}
-    print(request.headers)
-    # {'host': '...', ...}
-    print(request.body)
-    # b''
-    print(request.signals)
-    # {'theme': 'light'}
-    return rd.html("ok")
+# @rd.get("/docs/<folder_id>/<document_id>")
+# async def serve_document(request):
+#     print(request.method)
+#     # 'GET'
+#     print(request.raw_path)
+#     # '/docs/folder18/document4?page=42'
+#     print(request.path)
+#     # '/docs/folder18/document4'
+#     print(request.params)
+#     # {'folder_id': 'folder18', 'document_id': 'document4'}
+#     print(request.query)
+#     # {'page': ['2']}
+#     print(request.headers)
+#     # {'host': '...', ...}
+#     print(request.body)
+#     # b''
+#     print(request.signals)
+#     # {'theme': 'light'}
+#     return rd.html("ok")
 
 
 @rd.get("/sse")
@@ -144,7 +151,6 @@ async def sse_stream(request):
     response = rd.patch("""
 <main id="main">got it got it 2</main>
 """)
-    pprint(response)
     yield response
 
 
@@ -162,7 +168,8 @@ async def sse_stream(request):
 
 if __name__ == "__main__":
     print(database)
-    rd.run(reload=True)
+    # rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")
+    rd.run(sock="/run/legovh/rd.sock", reload=True)
 
 # viande out
