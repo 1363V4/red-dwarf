@@ -8,5 +8,5 @@ wheels/
 
 # Virtual environments
 .venv
-static/fonts/
-static/img/
+#static/fonts/
+#static/img/

@@ -1,6 +1,6 @@
 # from html import escape
 
-import other_site
+# import other_site
 import json
 from importlib import import_module
 from pathlib import Path
