@@ -31,10 +31,54 @@
     --code: #5036ff;
 }
 
+@media (width < 567px) {
+    :root {
+        --m: 25px;
+    }
+}
+
 body {
     background: var(--black);
     color: var(--white);
     font-family: "redhat", system-ui;
+}
+
+header {
+    font-family: "slkscr";
+    background-color: var(--black);
+    display: grid;
+    width: 100%;
+    margin-bottom: var(--m);
+    border-bottom: 3px solid var(--blue);
+    padding-inline: var(--s);
+    height: fit-content;
+
+    position: sticky;
+    inset: 0;
+    z-index: 2;
+
+    #topline {
+        display: grid;
+        grid-template-columns: 32px 1fr 32px;
+        img {
+            width: 32px;
+            cursor: pointer;
+        }
+    }
+
+    #side_panel {
+        margin-top: var(--xs);
+        p {
+            width: fit-content;
+        }
+    }
+    #side_panel:not([opened]) {
+        display: none;
+    }
+}
+
+main {
+    padding-inline: var(--m);
 }
 
 footer {
@@ -58,4 +102,13 @@ footer {
 
 li {
     margin-block: var(--xs);
+}
+
+code.language-markdown {
+    white-space: pre-wrap;
+}
+
+pre {
+    font-size: var(--s);
+    line-break: anywhere;
 }

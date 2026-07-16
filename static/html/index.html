@@ -9,6 +9,36 @@
         <script type="module" src="/static/js/prism.js"></script>
     </head>
     <body class="gf gc">
+        <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
+            <div id="topline">
+                <div class="gc">
+                    <a href="/">
+                        <img src="/static/img/red_dwarf.png" />
+                    </a>
+                </div>
+                <div></div>
+                <div
+                    id="burger"
+                    class="gc"
+                    data-style:rotate="$open ? '90deg' : '0deg'"
+                >
+                    <img
+                        src="/static/svg/burger.svg"
+                        data-on:click="$open = !$open"
+                    />
+                </div>
+            </div>
+            <nav id="side_panel" data-attr:opened="$open">
+                <ul>
+                    <li><a href="/getting_started">Getting Started</a></li>
+                    <li><a href="/docs">Reference</a></li>
+                    <li><a href="/examples">Examples</a></li>
+                    <li><a href="/essays">Essays</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
+                </ul>
+            </nav>
+        </header>
         <main>
             <div class="gc">
                 <h1 class="gt-xl gmb">RED DWARF</h1>
@@ -32,6 +62,15 @@
                 </div>
             </div>
             <hr class="gmb" />
+            <div class="gc gmb">
+                <ul>
+                    <li><strong>⚒️ No dependencies</strong></li>
+                    <li>⚒️ Easy to learn</li>
+                    <li>⚒️ Auto-reload</li>
+                    <li>⚒️ Powerful</li>
+                </ul>
+            </div>
+            <hr class="gmb" />
             <div class="gmb">
                 <p
                     class="gmb"
@@ -52,16 +91,7 @@
                 </div>
             </div>
             <hr class="gmb" />
-            <div class="gc gmb">
-                <ul>
-                    <li>⚒️ No dependencies</li>
-                    <li>⚒️ Easy to learn</li>
-                    <li>⚒️ Auto-reload</li>
-                    <li>⚒️ Powerful</li>
-                </ul>
-            </div>
-            <hr class="gmb" />
-            <div class="gc">
+            <div id="code_container" class="gc">
                 <ul>
                     <li>
                         <p><u>Step 1</u>: Declare routes</p>

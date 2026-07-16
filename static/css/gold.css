@@ -135,7 +135,7 @@
         grid-template-columns: 1fr 1.618fr;
         grid-template-rows: 1fr;
     }
-    @media (width < 576px) {
+    @media (width < 567px) {
         .gg01d {
             display: grid;
             grid-template-rows: 1fr 1.618fr;
@@ -148,7 +148,7 @@
         grid-template-columns: 1.618fr 1fr;
         grid-template-rows: 1fr;
     }
-    @media (max-width: 575px) {
+    @media (width < 567px) {
         .gg10d {
             display: grid;
             grid-template-rows: 1.618fr 1fr;

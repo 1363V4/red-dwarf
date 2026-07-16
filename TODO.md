@@ -16,15 +16,19 @@
 - draft a website on legovh
 - package: uv add red_dwarf
 
+- manque les titres des pages
 
 SIDEBAR
 FUNNIER FAQ
 
 DOC
-- faq
-- essays
-- cookbook...?
+- getting started
+- reference
 - examples
+- cookbook...?
+- essays
+- faq
+- github
 
 PERFORMANCE: uvloop
 

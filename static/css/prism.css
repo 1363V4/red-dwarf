@@ -30,7 +30,7 @@ pre[class*="language-"] {
     box-shadow: 1px 1px 0.5em #000 inset;
     margin: 0.5em 0;
     overflow: auto;
-    padding: 1em;
+    padding-inline: var(--s);
 }
 pre[class*="language-"]::-moz-selection {
     background: #27292a;

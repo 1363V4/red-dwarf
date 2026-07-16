@@ -8,57 +8,20 @@ body {
 h1 {
     font-family: "slkscr";
     color: var(--red);
+    margin-block: var(--m);
 }
 
 h2 {
     font-family: "slkscr";
     background-color: var(--white);
     color: var(--black);
-    margin-block: var(--m);
+    margin-block: var(--s);
 }
 
-header {
-    margin-bottom: var(--s);
-}
-
-#side_panel {
-    background-color: var(--blue);
-    height: fit-content;
-    div:not(#burger) {
-        z-index: 1;
-        &:not([opened]) {
-            display: none;
-        }
-    }
-    p {
-        width: fit-content;
-    }
-}
-
-#burger {
-    width: 100%;
-    img {
-        width: var(--m);
-        cursor: pointer;
-        align-self: start;
-        justify-self: end;
-    }
-}
-
-#main_panel {
-    padding-inline: var(--m);
+main {
     *:not(".gmb") {
         margin-bottom: var(--s);
     }
-}
-
-pre {
-    font-size: var(--s);
-    padding-top: var(--s);
-    padding-inline: var(--s);
-    margin-bottom: var(--m);
-    border: 1px solid var(--blue);
-    line-break: anywhere;
 }
 
 details {

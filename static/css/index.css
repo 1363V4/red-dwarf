@@ -5,34 +5,30 @@
     text-align: center;
 }
 
-main {
-    padding-inline: var(--s);
-}
-
 h1 {
     font-family: "redros";
     padding-top: var(--m);
-    background: linear-gradient(0deg, var(--red), var(--black));
+    background: linear-gradient(0deg, var(--code), var(--black));
     background-clip: text;
-    font-weight: bold;
-    text-shadow: 0px 0px var(--red);
-    filter: drop-shadow(2px 2px var(--blue));
-    animation: shadow_anim 2s steps(6) infinite;
+    text-shadow: 0px 0px var(--code);
+    filter: drop-shadow(2px 2px 15px var(--blue));
+    animation: shadow_anim 2s steps(16) infinite;
 }
 
 @keyframes shadow_anim {
     50% {
-        text-shadow: -4px 4px var(--red);
+        text-shadow: 2px 0px var(--red);
     }
 }
 
 #tagline small {
     font-style: italic;
+    text-shadow: -1px 1px 1px var(--red);
 }
 
 #uv {
     background-color: var(--code);
-    border-radius: var(--m);
+    border-radius: var(--s);
     code {
         background: linear-gradient(0deg, black, white);
         background-clip: text;
@@ -41,7 +37,7 @@ h1 {
 
 #buttons {
     grid-template-columns: 1fr 1fr;
-    @media (width > 500px) {
+    @media (width > 567px) {
         gap: var(--l);
     }
 }
@@ -50,20 +46,32 @@ h1 {
     background-color: var(--blue);
     border-radius: var(--m);
     text-decoration: none;
+    box-shadow: 0px 0px 2px var(--code);
     cursor: pointer;
 }
 
 .button_2 {
-    background-color: #080808;
     border: 1px solid var(--blue);
+    box-shadow: 0px 0px 1px var(--blue);
     border-radius: var(--m);
     text-decoration: none;
     grid-template-columns: auto 1fr;
     img {
         width: var(--m);
     }
+    cursor: pointer;
 }
 
 #time {
     color: var(--code);
+}
+
+#brag {
+    font-size: var(--s);
+}
+
+#code_container {
+    li {
+        padding-bottom: var(--m);
+    }
 }

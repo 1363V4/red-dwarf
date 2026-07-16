@@ -9,38 +9,46 @@
         <script type="module" src="/static/js/prism.js"></script>
     </head>
     <body class="gf">
-        <header id="side_panel" class="gz gp-xxs" data-signals="{open: false}">
-            <div id="burger" class="gc">
-                <img
-                    src="/static/svg/burger.svg"
-                    data-on:click="$open = !$open"
-                />
+        <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
+            <div id="topline">
+                <div class="gc">
+                    <a href="/">
+                        <img src="/static/img/red_dwarf.png" />
+                    </a>
+                </div>
+                <div></div>
+                <div
+                    id="burger"
+                    class="gc"
+                    data-style:rotate="$open ? '90deg' : '0deg'"
+                >
+                    <img
+                        src="/static/svg/burger.svg"
+                        data-on:click="$open = !$open"
+                    />
+                </div>
             </div>
-            <div data-attr:opened="$open">
+            <nav id="side_panel" data-attr:opened="$open">
+                <ul>
+                    <li><a href="/getting_started">Getting Started</a></li>
+                    <li><a href="/docs">Reference</a></li>
+                    <li><a href="/examples">Examples</a></li>
+                    <li><a href="/essays">Essays</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <nav>
+                <h2>Table Of Contents</h2>
                 <p><a href="#routes">Routes</a></p>
                 <p><a href="#requests">Requests</a></p>
                 <p><a href="#responses">Responses</a></p>
                 <p><a href="#app">App</a></p>
                 <p><a href="#before">Before you go</a></p>
-            </div>
-
-        </header>
-        <div id="main_panel">
-            <h1>Getting Started</h1>
-            <h2>Installation (TBD)</h2>
-            <p>I hope to get to uv add red-dwarf</p>
-            <p>uv add red_dwarf ?</p>
-            <p>uv add reddwarf ?</p>
-            <p>maybe a better name</p>
-            <p>...</p>
-            <p>Thinking about it, this project could be a git clone</p>
-            <h2>Your first app (TBD)</h2>
-            <p>I hope to get to uv init</p>
-            <p>or whatever stario was doing</p>
-            <p>and well, the idea is to show html and patch</p>
-            <p>or maybe a todo app?</p>
-            <p>A METTRE AILLEURS</p>
-            <hr />
+            </nav>
             <h1>Reference</h1>
             <h2 id="routes">Routes</h2>
             <p>
@@ -69,12 +77,15 @@ async def rename_user(request):
 async def remove_user(request):
     return rd.html(...)</code>
             </pre>
-            <p class="gmb">You can also use parameters in your routes and get back these values in your handler (see the "Requests" chapter)</p>
+            <p class="gmb">
+                You can also use parameters in your routes and get back these
+                values in your handler (see the "Requests" chapter)
+            </p>
             <h2 id="requests">Requests</h2>
             <p>Request is the only stateful object in Red Dwarf.</p>
             <p>
                 When Red Dwarf receives a request, it parses it for you into a
-                Request object that you can freely access. 
+                Request object that you can freely access.
             </p>
             <p>Note: All the attributes are strings or dicts.</p>
             <pre class="language-python">
@@ -121,7 +132,10 @@ async def red(request):
         cookies={'user_id': user_id}
     )</code>
             </pre>
-            <p>You can also use <code>rd.empty()</code> to return an empty response (useful in CQRS patterns).</p>
+            <p>
+                You can also use <code>rd.empty()</code> to return an empty
+                response (useful in CQRS patterns).
+            </p>
             <pre class="language-python">
             <code>
 @rd.get("/v1")
@@ -135,7 +149,10 @@ async def handle_command(request):
         database.process(user_id)
     return rd.empty()</code>
             </pre>
-            <p>Finally, you can use <code>rd.patch()</code> to any Datastar request.</p>
+            <p>
+                Finally, you can use <code>rd.patch()</code> to any Datastar
+                request.
+            </p>
             <pre class="language-python">
             <code>
 @rd.get("/sse")
@@ -143,7 +160,10 @@ async def sse_stream(request):
     async for message in pubsub_channel():
         yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
             </pre>
-            <p>The HTML in <code>rd.patch()</code> will replace the one on the page. Magic!</p>
+            <p>
+                The HTML in <code>rd.patch()</code> will replace the one on the
+                page. Magic!
+            </p>
             <h2 id="app">App</h2>
             <p>That's all!</p>
             <p>You now know how to use Red Dwarf.</p>
@@ -155,8 +175,15 @@ if __name__ == "__main__":
             </pre>
             <p>You're good to go!</p>
             <p>By default, Red Dwarf will serve on localhost.</p>
-            <p>You can also specify a custom host adress, or use a Unix port if you prefer.</p>
-            <p>Note: During development, you can use <code>reload=True</code>. It will detect any change in Python files or in your static folder, and will relaunch the server.</p>
+            <p>
+                You can also specify a custom host adress, or use a Unix port if
+                you prefer.
+            </p>
+            <p>
+                Note: During development, you can use <code>reload=True</code>.
+                It will detect any change in Python files or in your static
+                folder, and will relaunch the server.
+            </p>
             <pre class="language-python">
             <code>
 if __name__ == "__main__":
@@ -164,7 +191,10 @@ if __name__ == "__main__":
             </pre>
             <h2 id="before">Before you go</h2>
             <p>One last thing.</p>
-            <p>Red Dwarf gives you useful <code>before_request</code> / <code>after_response</code> decorators.</p>
+            <p>
+                Red Dwarf gives you useful <code>before_request</code> /
+                <code>after_response</code> decorators.
+            </p>
             <p>It's... pretty straightforward.</p>
             <p>Note: With <code>before_request</code>, you can return early.</p>
             <pre class="language-python">
@@ -179,9 +209,12 @@ def log(request):
     logger.info("Another successful response on f{request.path}!")</code>
             </pre>
             <h2>Off you go!</h2>
-            <p>You can continue by reading the FAQ, the Cookbook or the Essays (links)</p>
+            <p>
+                You can continue by reading the FAQ, the Cookbook or the Essays
+                (links)
+            </p>
             <p>Go build something!</p>
-        </div>
-    </body>
+        </main>
     <footer>2026 - Red Dwarf - Handcoded with love</footer>
+    </body>
 </html>

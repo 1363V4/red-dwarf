@@ -20,6 +20,15 @@ with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
 with open(HTML_PATH / "faq.html", "r", encoding="utf8") as f:
     PAGE_FAQ = f.read()
 
+with open(HTML_PATH / "getting_started.html", "r", encoding="utf8") as f:
+    PAGE_START = f.read()
+
+with open(HTML_PATH / "examples.html", "r", encoding="utf8") as f:
+    PAGE_EXAMPLES = f.read()
+
+with open(HTML_PATH / "essays.html", "r", encoding="utf8") as f:
+    PAGE_ESSAYS = f.read()
+
 with open("database.json") as db:
     database = json.load(db)
 
@@ -59,6 +68,18 @@ async def red(request):
 @rd.get("/faq")
 async def faq(request):
     return rd.html(PAGE_FAQ)
+
+@rd.get("/getting_started")
+async def start(request):
+    return rd.html(PAGE_START)
+
+@rd.get("/examples")
+async def examples(request):
+    return rd.html(PAGE_EXAMPLES)
+
+@rd.get("/essays")
+async def essays(request):
+    return rd.html(PAGE_ESSAYS)
 
 
 @rd.get("/redi")

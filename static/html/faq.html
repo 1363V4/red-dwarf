@@ -9,89 +9,127 @@
         <script type="module" src="/static/js/prism.js"></script>
     </head>
     <body class="gf gc">
-        <h1>FAQ</h1>
-        <details>
-            <summary>Can I use sync functions?</summary>
-            No. Everything in RD is async by default, except <code>run</code>.
-        </details>
-        <details>
-            <summary>Is there type matching on regex routes?</summary>
-            No. They're strings.
-        </details>
-        <details>
-            <summary>Is there a test client?</summary>
-            Not for the moment.
-        </details>
-        <details>
-            <summary>What is the test coverage of Red Dwarf?</summary>
-            0%.
-        </details>
-        <details>
-            <summary>Is it fast?</summary>
-            I didn't test it yet. COOKIE THING. UVLOOP.
-        </details>
-        <details>
-            <summary>Is Red Dwarf secure?</summary>
-            I guess!
-        </details>
-        <details>
-            <summary>What encryption does Red Dwarf use?</summary>
-            Bitcoin-style encryption 👌
-        </details>
-        <details>
-            <summary>How to serve static pages?</summary>
-            Load them into memory.
-        </details>
-        <details>
-            <summary>How does Red Dwarf handle static files?</summary>
-            We use etags.
-        </details>
-        <details>
-            <summary>What templating language does Red Dwarf use?</summary>
-            None.
-        </details>
-        <details>
-            <summary>Does Red Dwarf provide a database?</summary>
-            No.
-        </details>
-        <details>
-            <summary>How to enable compression?</summary>
-            No.
-        </details>
-        <details>
-            <summary>What HTML codes can Red Dwarf send?</summary>
-            No.
-        </details>
-        <details>
-            <summary>How to do telemetry?</summary>
-            With logging.
-        </details>
-        <details>
-            <summary>Do you have signals or a pubsub mechanism?</summary>
-            No.
-        </details>
-        <details>
-            <summary>Can I use Red Dwarf without Datastar?</summary>
-            No. I put something like 20 lines of helper code to help you use Datastar.
-            Do you really want to waste all this good work? 
-            That's what I thought
-        </details>
-        <details>
-            <summary>Which responses can I send?</summary>
-            OK, BAD_REQUEST, TEMPORARY_REDIRECT, NOT_MODIFIED, NOT_FOUND, INTERNAL_SERVER_ERROR. 
-            I haven't found the best way yet to return being a teapot.
-        </details>
-        <details>
-            <summary>What are good resources on Red Dwarf?</summary>
-            The fucking code.
-        </details>
-        <details>
-            <summary>Why did you create Red Dwarf?</summary>
-            People liked Datastar's examples but kept asking for backend code.
-            Because Datastar is backend agnostic, it was often a though question to answer.
-            So I decided to create the simplest framework ever, in Python,
-            to really hammer this down.
-        </details>
+        <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
+            <div id="topline">
+                <div class="gc">
+                    <a href="/">
+                        <img src="/static/img/red_dwarf.png" />
+                    </a>
+                </div>
+                <div></div>
+                <div
+                    id="burger"
+                    class="gc"
+                    data-style:rotate="$open ? '90deg' : '0deg'"
+                >
+                    <img
+                        src="/static/svg/burger.svg"
+                        data-on:click="$open = !$open"
+                    />
+                </div>
+            </div>
+            <nav id="side_panel" data-attr:opened="$open">
+                <ul>
+                    <li><a href="/getting_started">Getting Started</a></li>
+                    <li><a href="/docs">Reference</a></li>
+                    <li><a href="/examples">Examples</a></li>
+                    <li><a href="/essays">Essays</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h1>FAQ</h1>
+            <details name="faq">
+                <summary>Can I use sync functions?</summary>
+                No. Everything in RD is async by default, except <code>run</code>.
+            </details>
+            <details name="faq">
+                <summary>Is there type matching on regex routes?</summary>
+                No. They're strings.
+            </details>
+            <details name="faq">
+                <summary>Is there a test client?</summary>
+                Not for the moment.
+            </details>
+            <details name="faq">
+                <summary>What is the test coverage of Red Dwarf?</summary>
+                0%.
+            </details>
+            <details name="faq">
+                <summary>Is it fast?</summary>
+                I didn't test it yet. COOKIE THING. UVLOOP.
+            </details>
+            <details name="faq">
+                <summary>Is Red Dwarf secure?</summary>
+                I guess!
+            </details>
+            <details name="faq">
+                <summary>What encryption does Red Dwarf use?</summary>
+                Bitcoin-style encryption 👌
+            </details>
+            <details name="faq">
+                <summary>How to serve static pages?</summary>
+                Load them into memory.
+            </details>
+            <details name="faq">
+                <summary>How does Red Dwarf handle static files?</summary>
+                We use etags.
+            </details>
+            <details name="faq">
+                <summary>What templating language does Red Dwarf use?</summary>
+                None.
+            </details>
+            <details name="faq">
+                <summary>Does Red Dwarf provide a database?</summary>
+                No.
+            </details>
+            <details name="faq">
+                <summary>How to enable compression?</summary>
+                No.
+            </details>
+            <details name="faq">
+                <summary>What HTML codes can Red Dwarf send?</summary>
+                No.
+            </details>
+            <details name="faq">
+                <summary>How to do telemetry?</summary>
+                With logging.
+            </details>
+            <details name="faq">
+                <summary>Do you have signals or a pubsub mechanism?</summary>
+                No.
+            </details>
+            <details name="faq">
+                <summary>Can I use Red Dwarf without Datastar?</summary>
+                No. I put something like 20 lines of helper code to help you use
+                Datastar. Do you really want to waste all this good work? That's
+                what I thought
+            </details>
+            <details name="faq">
+                <summary>Which responses can I send?</summary>
+                OK, BAD_REQUEST, TEMPORARY_REDIRECT, NOT_MODIFIED, NOT_FOUND,
+                INTERNAL_SERVER_ERROR. I haven't found the best way yet to return
+                being a teapot.
+            </details>
+            <details name="faq">
+                <summary>What are good resources on Red Dwarf?</summary>
+                The fucking code.
+            </details>
+            <details name="faq">
+                <summary>What did you use for syntax highlighting?</summary>
+                The very good ......
+            </details>
+            <details name="faq">
+                <summary>Why did you create Red Dwarf?</summary>
+                People liked Datastar's examples but kept asking for backend code.
+                Because Datastar is backend agnostic, it was often a though question
+                to answer. So I decided to create the simplest framework ever, in
+                Python, to really hammer this down.
+            </details>
+        </main>
+        <footer>2026 - Red Dwarf - Handcoded with love</footer>
     </body>
-    <footer>2026 - Red Dwarf - Handcoded with love</footer>
 </html>

@@ -54,9 +54,7 @@ class Request:
     # Hence the default_factory
 
 
-Response = namedtuple(
-    "Response", ["body", "status", "content_type", "headers"]
-)
+Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
 
 # And finally some control flow,
 # async functions to call before parsing a request
@@ -89,8 +87,7 @@ READ_TIMEOUT = 10  # s
 # LOGGING
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
 )
 logger = logging.getLogger("RD")
 
@@ -195,7 +192,7 @@ async def _read_request(reader):
         )  # headers are overwritten because we don't like shenanigans
 
     cookies = {}
-    if cookie := headers.get('cookie'):
+    if cookie := headers.get("cookie"):
         try:
             c = SimpleCookie(cookie)
             for key, morsel in c.items():
@@ -247,8 +244,10 @@ def patch(data):
 
     return "\n".join(lines) + "\n\n"
 
+
 def redirect(location):
     return Response("", HTTPStatus.TEMPORARY_REDIRECT, None, [f"Location: {location}"])
+
 
 # WRITERS
 
@@ -313,7 +312,7 @@ def _find_handler(method, path):
 
 async def _handle(reader, writer):
     # this is a callback after the connection has been initialized
-    # reader is a StreamReader object, 
+    # reader is a StreamReader object,
     # writer is a StreamWriter object.
     # this is where everything happens:
     # we read from the stream, parse it into a "request"
@@ -324,9 +323,7 @@ async def _handle(reader, writer):
         if request is None:
             await _send_full(
                 writer,
-                Response(
-                    "Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []
-                ),
+                Response("Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []),
             )
             return
 
@@ -350,15 +347,11 @@ async def _handle(reader, writer):
             ):
                 # check if it's a cached asset
                 stat = candidate.stat()
-                etag = (
-                    f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
-                )
+                etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
                 if request.headers.get("if-none-match") == etag:
                     await _send_full(
                         writer,
-                        Response(
-                            "", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]
-                        ),
+                        Response("", HTTPStatus.NOT_MODIFIED, None, [("ETag", etag)]),
                     )
                 else:
                     mime, _ = mimetypes.guess_type(candidate.name)
@@ -375,9 +368,7 @@ async def _handle(reader, writer):
             else:
                 await _send_full(
                     writer,
-                    Response(
-                        "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
-                    ),
+                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
                 )
             return
 
@@ -432,32 +423,40 @@ async def _serve(host, port, sock):
                 "Are you on Windows? — unix socket not available, use host+port instead"
             )
         if os.path.exists(sock):
-            # Remove stale socket file left by previous unclean shutdown.
+            # Remove stale socket file left by previous unclean shutdown...
+            # does this really matter?
             os.unlink(sock)
         server = await asyncio.start_unix_server(_handle, path=sock)
+        # user and group can read and write
         os.chmod(sock, 0o660)
         logger.info(f"Listening on socket:{sock}")
     else:
         server = await asyncio.start_server(_handle, host, port)
         # maybe a welcome message: 1 read the tao, 2 escape user input
+        # not here... where ?
         logger.info(f"Listening on http://{host}:{port}")
 
-    # SIGTERM is common in containers/process managers.
-    # Closing the server lets `serve_forever()` exit cleanly.
-    # but shouldn't this be higher level?
+    # this can be simplified if i only handle sigterm only on linux
     if hasattr(signal, "SIGTERM"):
-        signal.signal(signal.SIGTERM, lambda *_: server.close())
+        try:
+            loop = asyncio.get_running_loop()
+            loop.add_signal_handler(signal.SIGTERM, server.close)
+        except NotImplementedError:
+            signal.signal(signal.SIGTERM, lambda *_: server.close())
 
     async with server:
         await server.serve_forever()
 
+
 # APP
+
 
 def _watch_for_changes():
     def iter_watched_files():
+        # is cwd what we really want to use??
         yield from Path.cwd().glob("*.py")
         yield from Path("static").glob("**/*")
-        yield from Path.cwd().glob("reddwarf/*.py") # REMEMBER TO REMOVE THAT
+        yield from Path.cwd().glob("reddwarf/*.py")  # REMEMBER TO REMOVE THAT
 
     mtimes = {}
 
@@ -476,7 +475,7 @@ def _watch_for_changes():
 
 
 def _run_once(host, port, sock):
-    # separate function so Windows can pickle it
+    # separate function so Windows can pickle it.
     # used in reload mode, see comments there
     try:
         asyncio.run(_serve(host, port, sock))
@@ -485,6 +484,11 @@ def _run_once(host, port, sock):
 
 
 def run(host="127.0.0.1", port=8080, sock=None, reload=False):
+    logger.info("Hello and welcome! Thank you for using Red Dwarf.")
+    logger.info("1. Read the Tao of Datastar")
+    logger.info("2. Remember to escape user input")
+    logger.info("3. ???")
+    logger.info("4. Profit!")
     try:
         if reload:
             # reload works like this:
