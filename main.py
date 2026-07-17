@@ -156,20 +156,19 @@ async def sse_stream(request):
 
 # @rd.get("/sse_stream")
 # async def sse_stream(request):
-#     response = rd.patch("""
-# <main id="main">got it</main>
-# """)
 #     try:
 #         while True:
-#             yield response
+#             yield rd.patch("""
+#         <main id="main">got it</main>
+#         """)
 #             await asyncio.sleep(1)
 #     finally:
-#             print("cleanup")
+#         print("cleanup")
 
 if __name__ == "__main__":
     print(database)
-    # rd.run(reload=True)
+    rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")
-    rd.run(sock="/run/legovh/rd.sock", reload=True)
+    # rd.run(sock="/run/legovh/rd.sock", reload=True)
 
 # viande out

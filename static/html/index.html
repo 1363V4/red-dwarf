@@ -3,42 +3,30 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Red Dwarf: the smallest Python server!"/>
+        <meta name="keywords" content="red, dwarf, small, python, web, server"/>
+        <meta name="author" content="Louis Sunshine"/>
+        <link rel="canonical" href="https://red.leg.ovh/" />
+
+        <meta property="og:title" content="red dwarf" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:description" content="Red Dwarf: the smallest Python server!" />
+        <meta property="og:url" content="https://red.leg.ovh/" />
+        <meta property="og:site_name" content="Red Dwarf" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta property="twitter:title" content="Red Dwarf" />
+        <meta name="twitter:image" content="https://red.leg.ovh/static/img/logo_128.png">
+
+        <title>Red Dwarf</title>
         <link rel="icon" href="/static/img/red_dwarf.png" />
         <link rel="stylesheet" href="/static/css/index.css" />
+        <script src="/static/js/site.js"></script>
         <script type="module" src="/static/js/datastar.js"></script>
         <script type="module" src="/static/js/prism.js"></script>
     </head>
     <body class="gf gc">
-        <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
-            <div id="topline">
-                <div class="gc">
-                    <a href="/">
-                        <img src="/static/img/red_dwarf.png" />
-                    </a>
-                </div>
-                <div></div>
-                <div
-                    id="burger"
-                    class="gc"
-                    data-style:rotate="$open ? '90deg' : '0deg'"
-                >
-                    <img
-                        src="/static/svg/burger.svg"
-                        data-on:click="$open = !$open"
-                    />
-                </div>
-            </div>
-            <nav id="side_panel" data-attr:opened="$open">
-                <ul>
-                    <li><a href="/getting_started">Getting Started</a></li>
-                    <li><a href="/docs">Reference</a></li>
-                    <li><a href="/examples">Examples</a></li>
-                    <li><a href="/essays">Essays</a></li>
-                    <li><a href="/faq">FAQ</a></li>
-                    <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
-                </ul>
-            </nav>
-        </header>
+        <site-header></site-header>
         <main>
             <div class="gc">
                 <h1 class="gt-xl gmb">RED DWARF</h1>

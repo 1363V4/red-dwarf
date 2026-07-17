@@ -18,6 +18,7 @@
 
 - manque les titres des pages
 - manque les cartes de sharing
+- changer les logos
 
 SIDEBAR
 FUNNIER FAQ

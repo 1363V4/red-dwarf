@@ -43,11 +43,14 @@ body {
     font-family: "redhat", system-ui;
 }
 
+site-header {
+    width: 100%
+}
+
 header {
     font-family: "slkscr";
     background-color: var(--black);
     display: grid;
-    width: 100%;
     margin-bottom: var(--m);
     border-bottom: 3px solid var(--blue);
     padding-inline: var(--s);

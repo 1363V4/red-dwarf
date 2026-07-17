@@ -1,0 +1,38 @@
+// well at least i tried, but this was obv a bad idea, as the code editor doesn't like it that much
+
+customElements.define('site-header', class extends HTMLElement {
+  connectedCallback() {
+    this.innerHTML = `
+      <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
+          <div id="topline">
+              <div class="gc">
+                  <a href="/">
+                      <img src="/static/img/red_dwarf.png" />
+                  </a>
+              </div>
+              <div></div>
+              <div
+                  id="burger"
+                  class="gc"
+                  data-style:rotate="$open ? '90deg' : '0deg'"
+              >
+                  <img
+                      src="/static/svg/burger.svg"
+                      data-on:click="$open = !$open"
+                  />
+              </div>
+          </div>
+          <nav id="side_panel" data-attr:opened="$open">
+              <ul>
+                  <li><a href="/getting_started">Getting Started</a></li>
+                  <li><a href="/docs">Reference</a></li>
+                  <li><a href="/examples">Examples</a></li>
+                  <li><a href="/essays">Essays</a></li>
+                  <li><a href="/faq">FAQ</a></li>
+                  <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
+              </ul>
+          </nav>
+      </header>
+    `;
+  }
+});
