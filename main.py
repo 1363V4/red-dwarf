@@ -166,7 +166,6 @@ async def sse_stream(request):
 #         print("cleanup")
 
 if __name__ == "__main__":
-    print(database)
     rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")
     # rd.run(sock="/run/legovh/rd.sock", reload=True)

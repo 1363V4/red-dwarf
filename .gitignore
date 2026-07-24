@@ -8,5 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# DB
+database.json
+
+# In case of
 #static/fonts/
 #static/img/

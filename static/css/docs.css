@@ -5,22 +5,37 @@ body {
     display: grid;
 }
 
+h1, h2 {
+    font-weight: bold;
+    padding-inline: var(--s);
+    width: fit-content;
+    color: var(--black);
+}
+
 h1 {
     font-family: "slkscr";
-    color: var(--red);
     margin-block: var(--m);
+    background-color: var(--red);
 }
 
 h2 {
     font-family: "slkscr";
-    background-color: var(--white);
-    color: var(--black);
     margin-block: var(--s);
+    background-color: var(--white);
+}
+
+p {
+    font-size: var(--s);
 }
 
 main {
     *:not(".gmb") {
         margin-bottom: var(--s);
+    }
+    nav {
+        padding-inline: var(--s);
+        border-radius: var(--s);
+        box-shadow: 0px -5px 3px -2px var(--code);
     }
 }
 

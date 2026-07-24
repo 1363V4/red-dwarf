@@ -23,16 +23,33 @@ h1 {
 
 #tagline small {
     font-style: italic;
-    text-shadow: -1px 1px 1px var(--red);
+    text-shadow: -1px 1px 10px var(--red);
 }
 
 #uv {
     background-color: var(--code);
     border-radius: var(--s);
     code {
-        background: linear-gradient(0deg, black, white);
+        background: linear-gradient(0deg, white, #0000);
         background-clip: text;
+        background-size: 200% 200%;
+        animation: uv_glow 1s 5s linear infinite alternate;
     }
+}
+
+/*@keyframes uv_glow {
+    from {background: linear-gradient(0deg, black, white);}
+    to {background: linear-gradient(0deg, black, red);}
+}*/
+/*
+@keyframes uv_glow {
+    from {--angle: 0deg}
+    to {--angle: 100deg}
+}*/
+
+@keyframes uv_glow {
+    from {background-position: 0% 0%;}
+    to {background-position: 0% 100%;}
 }
 
 #buttons {

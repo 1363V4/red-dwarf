@@ -29,7 +29,7 @@ customElements.define('site-header', class extends HTMLElement {
                   <li><a href="/examples">Examples</a></li>
                   <li><a href="/essays">Essays</a></li>
                   <li><a href="/faq">FAQ</a></li>
-                  <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
+                  <li><a target="_blank" href="https://github.com/1363V4/red-dwarf">Github</a></li>
               </ul>
           </nav>
       </header>

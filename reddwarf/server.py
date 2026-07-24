@@ -89,11 +89,7 @@ READ_TIMEOUT = 10  # s
 
 # LOGGING
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
-)
-logger = logging.getLogger("RD")
-
+logger = logging.getLogger(__name__)
 
 # ROUTES
 

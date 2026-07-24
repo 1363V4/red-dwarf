@@ -7,41 +7,15 @@
         <link rel="stylesheet" href="/static/css/docs.css" />
         <script type="module" src="/static/js/datastar.js"></script>
         <script type="module" src="/static/js/prism.js"></script>
+        <script src="/static/js/site.js"></script>
     </head>
     <body class="gf gc">
-        <header class="gp-xxs" data-signals="{open: false}" data-on:click__outside="$open = false">
-            <div id="topline">
-                <div class="gc">
-                    <a href="/">
-                        <img src="/static/img/red_dwarf.png" />
-                    </a>
-                </div>
-                <div></div>
-                <div
-                    id="burger"
-                    class="gc"
-                    data-style:rotate="$open ? '90deg' : '0deg'"
-                >
-                    <img
-                        src="/static/svg/burger.svg"
-                        data-on:click="$open = !$open"
-                    />
-                </div>
-            </div>
-            <nav id="side_panel" data-attr:opened="$open">
-                <ul>
-                    <li><a href="/getting_started">Getting Started</a></li>
-                    <li><a href="/docs">Reference</a></li>
-                    <li><a href="/examples">Examples</a></li>
-                    <li><a href="/essays">Essays</a></li>
-                    <li><a href="/faq">FAQ</a></li>
-                    <li><a href="https://github.com/1363V4/red-dwarf">Github</a></li>
-                </ul>
-            </nav>
-        </header>
+        <site-header></site-header>
 
         <main>
             <h1>FAQ</h1>
+            <h2>Serious questions</h2>
+            <h2>Not-so-serious questions</h2>
             <details name="faq">
                 <summary>Can I use sync functions?</summary>
                 No. Everything in RD is async by default, except <code>run</code>.
@@ -95,8 +69,15 @@
                 No.
             </details>
             <details name="faq">
-                <summary>How to do telemetry?</summary>
-                With logging.
+                <summary>How does logging work?</summary>
+                With <code class="language-python">logging</code>.
+                You can access Red Dwarf logger from your main file, for example for silencing it: <pre class="language-python">
+<code>import logging
+
+logging.getLogger("red-dwarf").disabled = True
+</code></pre>
+            If you don't setup logging, no worries, it will just get ignored.
+            What Red Dwarf logs: Info: incoming requests, startup, restart, shutdown / Error: error in handling request (with traceback),
             </details>
             <details name="faq">
                 <summary>Do you have signals or a pubsub mechanism?</summary>
