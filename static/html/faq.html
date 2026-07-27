@@ -14,8 +14,6 @@
 
         <main>
             <h1>FAQ</h1>
-            <h2>Serious questions</h2>
-            <h2>Not-so-serious questions</h2>
             <details name="faq">
                 <summary>Can I use sync functions?</summary>
                 No. Everything in RD is async by default, except <code>run</code>.
@@ -30,31 +28,34 @@
             </details>
             <details name="faq">
                 <summary>What is the test coverage of Red Dwarf?</summary>
-                0%.
+                0% for the moment.
             </details>
             <details name="faq">
                 <summary>Is it fast?</summary>
-                I didn't test it yet. COOKIE THING. UVLOOP.
+                I didn't test it yet.
+                I wouldn't know where to start, maybe with the "cookie" benchmark I saw online,
+                maybe using Locust.
+                One thig I'm interested in is seing if using uvloop
+                brings a significant boost.
             </details>
             <details name="faq">
                 <summary>Is Red Dwarf secure?</summary>
-                I guess!
-            </details>
-            <details name="faq">
-                <summary>What encryption does Red Dwarf use?</summary>
-                Bitcoin-style encryption 👌
+                Yes, thanks to Bitcoin-style encryption 👌
+                Jokes aside... I guess! The attack surface is rather small.
+                You still have to do stuff like
+                authentication and rate limiting by ourself, but that's by design.
             </details>
             <details name="faq">
                 <summary>How to serve static pages?</summary>
-                Load them into memory.
+                However you like. A straightforward way is to load them into memory.
+<pre class="language-python">
+<code>with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
+    PAGE_HOME = f.read()
+</code></pre>
             </details>
             <details name="faq">
                 <summary>How does Red Dwarf handle static files?</summary>
-                We use etags.
-            </details>
-            <details name="faq">
-                <summary>What templating language does Red Dwarf use?</summary>
-                None.
+                We use etags and the browser does the rest.
             </details>
             <details name="faq">
                 <summary>Does Red Dwarf provide a database?</summary>
@@ -62,11 +63,7 @@
             </details>
             <details name="faq">
                 <summary>How to enable compression?</summary>
-                No.
-            </details>
-            <details name="faq">
-                <summary>What HTML codes can Red Dwarf send?</summary>
-                No.
+                It's not in Red Dwarf yet, we recommend letting your reverse proxy handle it.
             </details>
             <details name="faq">
                 <summary>How does logging work?</summary>
@@ -97,11 +94,11 @@ logging.getLogger("red-dwarf").disabled = True
             </details>
             <details name="faq">
                 <summary>What are good resources on Red Dwarf?</summary>
-                The fucking code.
+                The code. Good and short.
             </details>
             <details name="faq">
-                <summary>What did you use for syntax highlighting?</summary>
-                The very good ......
+                <summary>What did you use for syntax highlighting on this site?</summary>
+                The very good <a href="https://prismjs.com/">prism.js</a> library.
             </details>
             <details name="faq">
                 <summary>Why did you create Red Dwarf?</summary>
