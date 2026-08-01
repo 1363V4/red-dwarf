@@ -1,6 +1,6 @@
 # from html import escape
 
-# import other_site
+# import other_site ... i'll do that for examples page
 import json
 from pathlib import Path
 from pprint import pprint
@@ -9,6 +9,16 @@ import logging
 
 # from uuid import uuid4
 import reddwarf as rd
+from pages import (
+    PAGE_INDEX, 
+    ESSAY_V0, 
+    PAGE_ESSAYS,
+    PAGE_EXAMPLES,
+    PAGE_FAQ,
+    PAGE_RED,
+    PAGE_GETTING_STARTED,
+    PAGE_DOCS
+    )
 
 
 logging.basicConfig(
@@ -16,25 +26,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("MAIN")
 
-
-
-HTML_PATH = Path().cwd() / "static" / "html"
-
-
-with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
-    PAGE_HOME = f.read()
-
-with open(HTML_PATH / "faq.html", "r", encoding="utf8") as f:
-    PAGE_FAQ = f.read()
-
-with open(HTML_PATH / "getting_started.html", "r", encoding="utf8") as f:
-    PAGE_START = f.read()
-
-with open(HTML_PATH / "examples.html", "r", encoding="utf8") as f:
-    PAGE_EXAMPLES = f.read()
-
-with open(HTML_PATH / "essays.html", "r", encoding="utf8") as f:
-    PAGE_ESSAYS = f.read()
 
 with open("database.json") as db:
     database = json.load(db)
@@ -54,22 +45,16 @@ with open("database.json") as db:
 @rd.get("/")
 async def index(request):
     logger.info("Hello there")
-    # with open(HTML_PATH / "index.html", "r") as f:
-    #     PAGE_HOME = f.read()
-    return rd.html(PAGE_HOME, cookies={"laid": "up"})
+    return rd.html(PAGE_INDEX, cookies={"laid": "up"})
 
 
 @rd.get("/docs")
 async def docs(request):
-    with open(HTML_PATH / "docs.html", "r") as f:
-        PAGE_DOCS = f.read()
-    return rd.html(PAGE_DOCS, headers=["Wait: What"], cookies={"cbs": "bd", 'down': 0})
+    return rd.html(PAGE_DOCS, headers=["Wait: What"])
 
 
 @rd.get("/red")
 async def red(request):
-    with open(HTML_PATH / "red.html", "r") as f:
-        PAGE_RED = f.read()
     return rd.html(PAGE_RED)
 
 @rd.get("/faq")
@@ -78,7 +63,7 @@ async def faq(request):
 
 @rd.get("/getting_started")
 async def start(request):
-    return rd.html(PAGE_START)
+    return rd.html(PAGE_GETTING_STARTED)
 
 @rd.get("/examples")
 async def examples(request):
@@ -126,33 +111,18 @@ async def time(request):
 #     # {'theme': 'light'}
 #     return rd.html("ok")
 
-
-@rd.get("/sse")
-async def sse(request):
-    return rd.html("""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-	<link rel="icon" href="/static/img/red_dwarf.png"/>
-    <link rel="stylesheet" href="/static/css/index.css"/>
-	<script type="module" src="/static/js/datastar.js"></script>
-</head>
-<body class="gf gc">
-    <main id="main" data-init="@get('/sse_stream')">waiting for a stream</main>
-</body>
-</html>
-""")
-
-
-@rd.get("/sse_stream")
-async def sse_stream(request):
-    response = rd.patch("""
-<main id="main">got it got it 2</main>
-""")
-    yield response
-
+@rd.get("/essays/<essay>")
+async def essay_page(request):
+    # request should be req
+    d_essay = {
+        'v0': ESSAY_V0,
+    }
+    essay = request.params.get('essay')
+    page = d_essay.get(essay)
+    if page:
+        return rd.html(page)
+    else:
+        return rd.redirect("/")
 
 # @rd.get("/sse_stream")
 # async def sse_stream(request):

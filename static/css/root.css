@@ -1,5 +1,3 @@
-@import url("prism.css");
-
 @font-face {
     font-family: "redhat";
     font-style: normal;
@@ -25,11 +23,18 @@
 :root {
     --m: 31px;
     --black: #070204;
-    --white: #ffffff80;
+    --white: #ffffff9e;
     --red: #f33535;
     --blue: #2936f2;
     --code: #5036ff;
 }
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --white: #070204;
+        --black: #ffffff80;
+    }
+  }
 
 @media (width < 567px) {
     :root {
@@ -40,12 +45,31 @@
 body {
     background: var(--black);
     color: var(--white);
-    font-family: "redhat", system-ui;
+    font-family: "redros", system-ui;
 }
 
-site-header {
-    width: 100%;
-    text-align: center;
+h1 {
+    margin-block: var(--m);
+    background-color: var(--red);
+}
+
+h2 {
+    font-family: "slkscr";
+    margin-block: var(--s);
+    background-color: var(--white);
+}
+
+p {
+    font-size: var(--s);
+}
+
+strong {
+    font-weight: normal;
+    color: white;
+}
+
+img {
+    mix-blend-mode: lighten;
 }
 
 header {

@@ -1,77 +1,115 @@
+@import url("prism.css") layer(prism);
 @import url("gold.css");
 @import url("root.css");
 
-* {
+.tac {
     text-align: center;
 }
 
-h1 {
-    font-family: "redros";
+body {
+    display: grid;
+}
+
+h1, h2 {
+    font-family: "slkscr";
+    font-weight: bold;
+    padding-inline: var(--s);
+    width: fit-content;
+    color: var(--black);
+}
+
+main {
+    *:not(".gmb") {
+        margin-bottom: var(--s);
+    }
+    nav {
+        width: max-content;
+        padding-inline: var(--s);
+        border-radius: var(--s);
+        box-shadow: 0px -5px 3px -2px var(--code);
+        h2 {
+            background-color: var(--blue);
+            font-weight: normal;
+        }
+    }
+}
+
+code {
+    font-family: redhat;
+	font-size: inherit;
+}
+
+details {
+    margin-block: var(--s);
+    text-align: center;
+    summary {
+        margin-block: var(--s);
+    }
+}
+
+#title {
     padding-top: var(--m);
     background: linear-gradient(0deg, var(--code), var(--black));
     background-clip: text;
     text-shadow: 0px 0px var(--code);
-    filter: drop-shadow(2px 2px 15px var(--blue));
+    filter: drop-shadow(2px 2px 2px var(--blue));
     animation: shadow_anim 2s steps(16) infinite;
 }
 
 @keyframes shadow_anim {
     50% {
-        text-shadow: 2px 0px var(--red);
+        text-shadow: 2px 2px var(--red);
     }
 }
 
 #tagline small {
     font-style: italic;
     text-shadow: -1px 1px 10px var(--red);
+    box-shadow: 0px 1px var(--red);
 }
 
 #uv {
-    background-color: var(--code);
-    border-radius: var(--s);
+    /* background-color: var(--code); */
+    box-shadow: inset 0px 0px 5px var(--white);
     code {
+        /* font-family: "slkscr"; */
+        font-size: var(--s);
+        padding-inline: var(--m);
+        color: var(--white);
         background: linear-gradient(0deg, white, #0000);
         background-clip: text;
         background-size: 200% 200%;
-        animation: uv_glow 1s 5s linear infinite alternate;
     }
-}
-
-/*@keyframes uv_glow {
-    from {background: linear-gradient(0deg, black, white);}
-    to {background: linear-gradient(0deg, black, red);}
-}*/
-/*
-@keyframes uv_glow {
-    from {--angle: 0deg}
-    to {--angle: 100deg}
-}*/
-
-@keyframes uv_glow {
-    from {background-position: 0% 0%;}
-    to {background-position: 0% 100%;}
 }
 
 #buttons {
     grid-template-columns: 1fr 1fr;
+    gap: var(--l);
     @media (width > 567px) {
-        gap: var(--l);
+        gap: var(--xxl);
+    }
+}
+
+.button_1, .button_2 {
+    width: max-content;
+    border-radius: var(--s);
+    transition: box-shadow .1s linear;
+    &:hover {
+        box-shadow: 0px 0px 5px 2px var(--code);
     }
 }
 
 .button_1 {
-    background-color: var(--blue);
-    border-radius: var(--m);
+    color: var(--blue);
     text-decoration: none;
-    box-shadow: 0px 0px 2px var(--code);
+    box-shadow: 0px 0px 5px var(--code);
     cursor: pointer;
     user-select: none;
 }
 
 .button_2 {
     border: 1px solid var(--blue);
-    box-shadow: 0px 0px 1px var(--blue);
-    border-radius: var(--m);
+    box-shadow: 0px 0px 5px var(--blue);
     text-decoration: none;
     grid-template-columns: auto 1fr;
     img {
@@ -93,4 +131,8 @@ h1 {
     li {
         padding-bottom: var(--m);
     }
+}
+
+pre[class*="language-"] {
+    padding-inline: var(--s);
 }

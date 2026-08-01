@@ -20,8 +20,11 @@
 - manque les cartes de sharing
 - changer les logos
 
-SIDEBAR
-FUNNIER FAQ
+CHANGER LOGOS
+
+FAIRE ESSAYS
+ok je veux quoi.
+scanner templates.html
 
 DOC
 - getting started
