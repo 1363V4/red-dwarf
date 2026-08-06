@@ -65,8 +65,13 @@ _before_request = []
 _after_response = []
 _after_event = []
 
-# on hold for now...
-STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+_static_dir: Path | None = None
+
+
+def _resolve_static_dir(static_dir: str | Path | None) -> Path | None:
+    if static_dir is None:
+        return None
+    return Path(static_dir).resolve()
 
 
 def before_request(fn):
@@ -328,10 +333,17 @@ async def _handle(reader, writer):
             return
 
         if request.method == "GET" and request.path.startswith("/static/"):
-            candidate = STATIC_DIR / request.path.removeprefix("/static/")
+            if _static_dir is None:
+                await _send_full(
+                    writer,
+                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+                )
+                return
+
+            candidate = _static_dir / request.path.removeprefix("/static/")
             candidate = candidate.resolve()
 
-            if candidate.is_relative_to(STATIC_DIR) and candidate.is_file():
+            if candidate.is_relative_to(_static_dir) and candidate.is_file():
                 stat = candidate.stat()
                 etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
 
@@ -463,10 +475,17 @@ async def _serve(host, port, sock):
 
 def _watch_for_changes():
     def iter_watched_files():
-        # is cwd what we really want to use??
-        yield from Path.cwd().glob("*.py")
-        yield from Path("static").glob("**/*")
-        yield from Path.cwd().glob("reddwarf/*.py")  # REMEMBER TO REMOVE THAT
+        root = Path.cwd()
+        package = root / "src" / "red_dwarf"
+        site = root / "site"
+        if package.is_dir():
+            yield from package.rglob("*.py")
+        if site.is_dir():
+            yield from site.rglob("*.py")
+            static = site / "static"
+            if static.is_dir():
+                yield from static.rglob("*")
+        yield from root.glob("*.py")
 
     mtimes = {}
 
@@ -493,7 +512,10 @@ def _run_once(host, port, sock):
         pass
 
 
-def run(host="127.0.0.1", port=8080, sock=None, reload=False):
+def run(host="127.0.0.1", port=8080, sock=None, reload=False, static_dir=None):
+    global _static_dir
+    _static_dir = _resolve_static_dir(static_dir)
+
     logger.info("Hello and welcome! Thank you for using Red Dwarf.")
     logger.info("1. Read the Tao of Datastar")
     logger.info("2. Remember to escape user input")

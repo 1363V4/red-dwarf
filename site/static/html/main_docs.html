@@ -1,12 +1,14 @@
 <main>
-    <nav class="gm-l gt-s">
-        <h2>Table Of Contents</h2>
-        <p><a href="#routes">Routes</a></p>
-        <p><a href="#requests">Requests</a></p>
-        <p><a href="#responses">Responses</a></p>
-        <p><a href="#app">App</a></p>
-        <p><a href="#before">Before you go</a></p>
-    </nav>
+    <div class="gc">
+        <nav class="gm-l gt-s">
+            <h2>Table Of Contents</h2>
+            <p><a href="#routes">Routes</a></p>
+            <p><a href="#requests">Requests</a></p>
+            <p><a href="#responses">Responses</a></p>
+            <p><a href="#app">App</a></p>
+            <p><a href="#before">Before you go</a></p>
+        </nav>
+    </div>
     <h1>Reference</h1>
     <h2 id="routes">Routes</h2>
     <p>
@@ -70,7 +72,7 @@ print(request.signals)
 # {'theme': 'light'}
 return rd.html(...)</code>
     </pre>
-    <p>As you see, Datastar signals are automatically parsed.</p>
+    <p class="gmb">As you see, Datastar signals are automatically parsed.</p>
     <h2 id="responses">Responses</h2>
     <p>In Red Dwarf, there are only 4 possible responses.</p>
     <p>Most of the time, you'll answer with <code>rd.html()</code>.</p>
@@ -118,7 +120,7 @@ async def sse_stream(request):
 async for message in pubsub_channel():
 yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
     </pre>
-    <p>
+    <p class="gmb">
         The HTML in <code>rd.patch()</code> will replace the one on the
         page. Magic!
     </p>
@@ -142,7 +144,7 @@ rd.run(reload=True)</code>
         It will detect any change in Python files or in your static
         folder, and will relaunch the server.
     </p>
-    <pre class="language-python">
+    <pre class="language-python gmb">
     <code>
 if __name__ == "__main__":
 rd.run(sock="/unix.sock", reload=True)</code>
@@ -155,7 +157,7 @@ rd.run(sock="/unix.sock", reload=True)</code>
     </p>
     <p>It's... pretty straightforward.</p>
     <p>Note: With <code>before_request</code>, you can return early.</p>
-    <pre class="language-python">
+    <pre class="language-python gmb">
     <code>
 @rd.before_request
 def cookie_check(request):

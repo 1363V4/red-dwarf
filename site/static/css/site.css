@@ -8,6 +8,8 @@
 
 body {
     display: grid;
+    min-block-size: 100dvb;
+    grid-template-rows: auto 1fr auto;
 }
 
 h1, h2 {
@@ -48,12 +50,12 @@ details {
 }
 
 #title {
-    padding-top: var(--m);
     background: linear-gradient(0deg, var(--code), var(--black));
     background-clip: text;
     text-shadow: 0px 0px var(--code);
     filter: drop-shadow(2px 2px 2px var(--blue));
     animation: shadow_anim 2s steps(16) infinite;
+    line-break: anywhere;
 }
 
 @keyframes shadow_anim {
@@ -64,8 +66,8 @@ details {
 
 #tagline small {
     font-style: italic;
-    text-shadow: -1px 1px 10px var(--red);
-    box-shadow: 0px 1px var(--red);
+    color: white;
+    text-shadow: -1px 1px 5px var(--red);
 }
 
 #uv {

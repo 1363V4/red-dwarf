@@ -1,7 +1,51 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12"]
+build-backend = "uv_build"
+
 [project]
 name = "red-dwarf"
 version = "0.1.0"
-description = "Add your description here"
+description = "A 0-dependency async HTTP server built for Datastar."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Louis Sunshine", email = "nowannatell@gmail.com" },
+]
+keywords = ["http", "server", "asyncio", "datastar", "html"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/1363V4/red-dwarf"
+Documentation = "https://github.com/1363V4/red-dwarf#readme"
+Repository = "https://github.com/1363V4/red-dwarf"
+Issues = "https://github.com/1363V4/red-dwarf/issues"
+
+[tool.uv]
+package = true
+
+[tool.uv.build-backend]
+source-exclude = [
+    "/site/**",
+    "/main.py",
+    "/pages.py",
+    "/other_site.py",
+    "/temp.py",
+    "/locustfile.py",
+    "/database.json",
+    "/TODO.md",
+    "/REFERENCE.md",
+]

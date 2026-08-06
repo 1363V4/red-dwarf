@@ -1,4 +1,4 @@
-import reddwarf as rd
+import red_dwarf as rd
 
 
 @rd.get("/hello")

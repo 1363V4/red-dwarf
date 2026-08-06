@@ -111,12 +111,17 @@ main {
 
 footer {
     margin-top: var(--m);
-    padding-bottom: var(--xxs);
-    font-size: var(--xs);
-    background: linear-gradient(var(--blue), var(--black));
-    border-radius: 40% 40% 0 0;
     width: 100%;
-    text-align: center;
+    color: var(--black);
+    margin-bottom: var(--s);
+    p {
+        font-size: var(--xs);
+        padding-inline: var(--l);
+        text-align: center;
+        background: var(--blue);
+        /* background: linear-gradient(var(--black), var(--blue) 20%, var(--blue) 80%, var(--black)); */
+        border-radius: var(--xl);
+    }
 }
 
 .button[disabled] {

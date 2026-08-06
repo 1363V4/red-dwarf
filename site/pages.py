@@ -1,9 +1,7 @@
 from pathlib import Path
-from pprint import pprint
 
-_CWD = Path.cwd()
-
-_HTML_DIR = _CWD / "static" / "html"
+_SITE_DIR = Path(__file__).resolve().parent
+_HTML_DIR = _SITE_DIR / "static" / "html"
 _ESSAYS_DIR = _HTML_DIR / "essays"
 
 _html_parts = {}

@@ -10,7 +10,7 @@
 
 - ok cookie je pense que c'est bon, faudra tester avec sse
 - cors, vérifier si c'est pas fait par caddy, a priori oui
-- is it worth checking static first?
+- is it worth checking static first? measure bitch
 
 - thank lea for prism
 - draft a website on legovh
@@ -18,13 +18,9 @@
 
 - manque les titres des pages
 - manque les cartes de sharing
-- changer les logos
-
-CHANGER LOGOS
 
 FAIRE ESSAYS
-ok je veux quoi.
-scanner templates.html
+PEOPLE ON THE SITE
 
 DOC
 - getting started

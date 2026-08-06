@@ -12,12 +12,10 @@ from .server import (
     run,
 )
 
-# Hello there!
-# This init file could stop there,
-# but ruff panics if it doesn't see the __all__
-# poor boy
+__version__ = "0.1.0"
 
 __all__ = (
+    "__version__",
     "after_response",
     "before_request",
     "delete",
