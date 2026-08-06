@@ -136,7 +136,7 @@ async def essay_page(request):
 #         print("cleanup")
 
 if __name__ == "__main__":
-    rd.run(reload=True, static_dir=_SITE_DIR / "static")
+    rd.run(reload=True)
     # app.run(sock="/tmp/grug.sock")
     # rd.run(sock="/run/legovh/rd.sock", reload=True)
 

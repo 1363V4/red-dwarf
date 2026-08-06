@@ -22,6 +22,8 @@
 FAIRE ESSAYS
 PEOPLE ON THE SITE
 
+possible bug si y'a pas de static folder?
+
 DOC
 - getting started
 - reference

@@ -1,288 +1,57 @@
-# Red Dwarf User Manual
+# Red Dwarf
 
-![logo](/static/img/red_dwarf.png)
+![Red Dwarf](site/static/img/logo_124.png)
 
-## Marketing
+**Website:** [red.leg.ovh](https://red.leg.ovh) · **Docs:** [/docs](https://red.leg.ovh/docs) · **FAQ:** [/faq](https://red.leg.ovh/faq) · **GitHub:** [1363V4/red-dwarf](https://github.com/1363V4/red-dwarf)
 
-1. Declare routes
-2. Send Html
-3. ...
-4. Profit!
+Red Dwarf is a zero-dependency async HTTP/1.1 server for Python, built around [Datastar](https://data-star.dev/). 
 
-## Overview
+## Why Red Dwarf?
 
-### What is Red Dwarf?
+Datastar keeps application state on the backend. But the backend is more than a web server: it is also database, cronjobs, pub/sub, scripts... 
 
-Red Dwarf is a very minimal and very opinionated Python ASGI server.
+Red Dwarf does the smallest useful slice: parse HTTP, match routes, return HTML or stream patches. You write the rest of your Python however you like.
 
-Red Dwarf:
+Red Dwarf is a good first step with Datastar. For multiple workers, middleware stacks, or heavy production tooling, look at [Stario](http://stario.dev/), [Sanic](https://sanic.dev/), or [Quart](https://quart.palletsprojects.com/).
 
-- only use the Python default library
-- is fast?
-- has sensible helper functions / looks familiar
-- is decently secure?
-- gets you running in seconds
+## Requirements
 
-### Why Red Dwarf?
+- Python **3.11+** (see `pyproject.toml`)
 
-First, Red Dwarf highly recommends [Datastar](https://data-star.dev/).
+## Install
 
-Datastar's philosophy (and Red Dwarf's) is
-"keeping state in the backend".
-
-But the "backend" is not equal to the "server", it's more than that.
-It's your database, your cronjobs, your pubsub system, your other Python scripts...
-
-Red Dwarf gets out of your way by doing what a server should do
-(receiving and responding to Web requests)
-and nothing more,
-so you can write your Python however you see fit.
-
-### How to use Red Dwarf?
-
-Simply run `uv add red-dwarf` to your project to get going.
-
-Note: You need Python minimum version ?????????????????????
-hmm yes if you have to import zlib/compress which are optional modules
-but even there with asyncio, let's say 3.11
-
-Then, head over to [Quickstart](#quickstart)
-
-### When not to use Red Dwarf?
-
-Red Dwarf is intended as a first "entry point" into the world of Datastar.
-
-Don't use Red Dwarf if:
-
-- you need multiple workers
-- you need middlewares
-- you need telemetry
-- you need advanced server functions
-- you're doing anything serious
-
-We instead recommend the following tools:
-
-- [Stario](http://stario.dev/), a complete Python + Datastar framework
-- [Sanic](https://sanic.dev/)
-- [Quart](https://quart.palletsprojects.com/)
+It's not on Pypi yet (please give me a hand lol)
+but you can get the code in src.
 
 ## Quickstart
 
-### Hello World
-
-After installing `uv add red-dwarf`,
-create a new file named `app.py` and write:
+Create `app.py`:
 
 ```python
-from red_dwarf import App, Input, Output
+import red_dwarf as rd
 
-app = App()
-
-@app.get("/")
-def index(i,o):
-	return o.html("<h1>hello world!</h1>")
+@rd.get("/")
+async def index(request):
+    return rd.html("<h1>Hello, world!</h1>")
 
 if __name__ == "__main__":
-	app.run()
+    rd.run(reload=True)
 ```
 
-Open a web browser and go to `http://localhost:8080/`: you should see the hello world message.
+Run it and open [http://127.0.0.1:8080/](http://127.0.0.1:8080/).
 
-What we did here:
+Handlers are **async** functions. Register them with `@rd.get`, `@rd.post`, `@rd.put`, or `@rd.delete`. Return `rd.html(...)` for pages, `rd.redirect(...)`, or `rd.empty()`. For live UI updates, make the handler an **async generator** and `yield rd.patch(...)` (Datastar SSE patches)—see [the site demo](https://red.leg.ovh/) and [reference](https://red.leg.ovh/docs).
 
-- Created our server with `app = App()`
-- Registered a handler `index` for GET request on the home page `@app.get("/")`
-- Told the handler to output HTML
-- Started the server with `app.run()`
+Path parameters use angle brackets: `@rd.get("/essays/<essay>")` → `request.params["essay"]`.
 
-### Your first app
+## Reverse proxy
 
-Let's modify `app.py`:
-
-```python
-from red_dwarf import App, Input, Output
-
-app = App()
-
-@app.get("/")
-def index(i,o):
-	return o.html(
-'''
-<html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="/static/css/index.css"/>
-    <script type="module" src="/static/js/datastar.js">
-</head>
-<body class="gc">
-...
-</body>
-</html>
-'''
-    )
-
-if __name__ == "__main__":
-	app.run()
-```
-
-We now have a proper HTML "file" (well, a string)
-which now includes Datastar and 
-gold.css.
-
-You'll notice immediately that the page is reactive.
-Go to localhost and fill the input: the text is updated on the frontend by Datastar.
-
-Next, we'll add a route to react from the backend.
-Start by modifying the index HTML to:
-
-...
-
-then add route "dwarf_name" like this:
-
-...
-
-Tada!
-
-### Your first stream
-
-Finally, let's see how alive and patch work by opening a SSE stream.
-
-We start from our previous code:
-
-...
-
-And we modify the body to open a SSE stream:
-
-...
-
-Now we just need to add the SSE route:
-
-...
-
-Go to localhost and watch the dwarf count time!
-
-NB: we only allow
-patching html
-with datastar default merge strategy
-that should work 100% of the time
-patch signals by piggybacking them on whatever
-(put that shit in details)
-
-## Usage behing a reverse proxy
-
-we like caddy
-
-NB: for nginx you have to disable
-X-Accel-Buffering
-in the headers for sse streams
-
-## The rest of the backend
-
-### Database
-
-We like SQLITE and TINYDB
-
-### Pubsub
-
-We like REDIS and NATS
-
-### HTML generation
-
-We like what Stario and are waiting for t-strings
-
-### Telemetry
-
-We like LOGGER
-
-### BG tasks
-
-We like ASYNCIO
-but are waiting for free threading
+In production, terminating TLS and serving/cacheing static assets with [Caddy](https://caddyserver.com/) (or similar) is recommended. For **SSE** streams behind nginx, disable buffering (e.g. `X-Accel-Buffering: no` on the response).
 
 ## FAQ
 
-**Question?**
+Common questions (sync vs async, JSON, tests, compression, cookies, and more) live on the site: **[red.leg.ovh/faq](https://red.leg.ovh/faq)**.
 
-Answer.
+## License
 
-**Can I use sync functions?**
-
-No. Everything in RD is async by default.
-
-**Can I respond with json?**
-
-No.
-
-**Is there type matching on regex routes?**
-
-No, they're strings.
-
-**How can I debug?**
-
-We recommend using `print()`.
-
-**How can I test?**
-
-We recommend using `assert`.
-
-**What?! You didn't write any tests**
-
-Not yet, no.
-
-**Can I add routes at runtime?**
-
-Well you can change your code and the server will restart, but... why do that?
-
-**Is it secure?**
-
-bitcoin style encryption
-
-**Why is there no compression?**
-
-We let the reverse proxy do it.
-because caddy will compress it faster, after its own middlewares
-and can also use precompressed files!! to save some cpu
-(rarely the bottleneck tbh but hey)
-yeah you lose some on the compression window
-
-**Why is there no static files?**
-
-We let the reverse proxy do it,
-and the browser cache them with etags.
-
-**But why?**
-
-Just like everybody needs a frontend framework (like Datastar),
-everybody needs a reverse proxy.
-So more people work on them,
-which means they're likely better.
-
-We do the absolute minimum at the Python level
-and let Caddy's Go code and Chrome's C++
-do the heavy lifting.
-
-**What status code can I send?**
-
-200 for html.
-and the rest is classic.
-
-**How can I set cookies?**
-
-Very easy,
-request.cookies.get
-html(cookie={'key': value})
-
-**How do I add headers**
-
-headers=["Wait: What"]
-there's no reason to do it, so if you do it
-please be prepared
-
-**How to serve static templates**
-
-Just load them into memory!
-
-**Use a real framework**
-
-I prefer starlette for actually reading the code.
+MIT — see [LICENSE](LICENSE).
