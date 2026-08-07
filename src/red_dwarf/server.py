@@ -438,8 +438,6 @@ async def _serve(host, port, sock):
         logger.info(f"Listening on socket:{sock}")
     else:
         server = await asyncio.start_server(_handle, host, port)
-        # maybe a welcome message: 1 read the tao, 2 escape user input
-        # not here... where ?
         logger.info(f"Listening on http://{host}:{port}")
 
     # this can be simplified if i only handle sigterm only on linux
@@ -462,7 +460,8 @@ async def _serve(host, port, sock):
 
 def _watch_for_changes():
     def iter_watched_files():
-        root = Path.cwd()
+        root = Path.cwd().parent
+        # just for this repo, should change it before release
         package = root / "src" / "red_dwarf"
         site = root / "site"
         if package.is_dir():

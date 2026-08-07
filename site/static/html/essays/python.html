@@ -5,7 +5,8 @@
         Python is a horrendously slow language,
         too high-level for your own good,
         and it hides a lot of stuff 
-        you should definitively be aware about 
+        you should definitively be conscious about 
+        if you want
         to be a better programmer.
     </p>
     <p>It's also the language that I love.</p>
@@ -14,39 +15,127 @@
         The syntax is just so good.
         Like a good friend said,
         Python is 
-        "pseudocode that runs".
+        <q>pseudocode that runs</q>
+        .
     </p>
     <p>
-        Having said that, I think you should use Python responsibly,
+        Having said that, I think you should 
+        <strong>use Python responsibly</strong>,
         that is:
         use Python to write scripts that call 
         C libraries that were optimized by people smarter than you.
     </p>
-    <p>
+    <!-- <p>
         (Or, for short scripts, directly leverage
         <code>bytes</code> or stuff like that.
         As an example, 
         here's a script 
         I like very much.)
-    </p>
+    </p> -->
     <p>
-        So is it what I did for Red Dwarf? Yes and no.
+        So is it what I did for Red Dwarf? Well... no.
     </p>
     <h2>Python and friends</h2>
     <p>
-        Yes/no because pure Python / no dependencies
-        was a requirement from the start,
-        but not the req. which was few lines.
+        <ul indented>
+            <li>
+                No, because I didn't tap into the C library, and instead embraced requests and responses being dynamic objects.
+            </li>
+            <li>
+                No, because I did not use any dependencies to make installs easier, when importing uvloop could have been a speed boost.
+            </li>
+            <li>
+                No, because if I really cared about performance, I would have actually measured and tested my shit.
+            </li>
+        </ul>
     </p>
     <p>
-        Yes, but instead of C library it's caddy
+        But hey,
+        at least I was aware of that 
+        and I tried to write as less
+        Pythonslop as possible.
+        Functions over methods.
+        Smart branching.
+        Early returns.
     </p>
-
-    <p>so i wanted to do a perf oriented framework... did i do it? no. no test, and "no dependency"</p>
-    <h2>caddy</h2>
-    <p>caddy cors</p>
-    <p>... what caddy really do</p>
-    <h2>compression</h2>
-    <p>caddy compression</p>
-    <p>no window tuning :/</p>
+    <p>
+        And it is also because
+        I was aware of that 
+        (I'm not boring you without a reason)
+        that I choosed to delegate as much work as possible 
+        to "something else".
+    </p>
+    <p>
+        That something else being 
+        <a href="caddyserver.com">Caddy</a>
+        .
+    </p>
+    <h2>The Caddy case</h2>
+    <p>Caddy is a fantastic reverse proxy.</p>
+    <p>
+        It's fast (because it's not written in Python duh),
+        it's got a lot of features,
+        can do HTTP2/3 no problem, 
+        and it handles cert renewal for you (!).
+    </p>
+    <p>
+        I love Caddy.
+        If you use Red Dwarf, 
+        I recommend you do it with Caddy.
+    </p>
+    <p>
+        Stuff like CORS, static serve, etc,
+        try to do it in Caddy first.
+    </p>
+    <p>
+        The only problem I see is compression:
+        Caddy can do it just fine in most algorithms that matter,
+        and Datastar benefits
+        <strong>immensely</strong>
+        from compression,
+        but it's said in secret cult circles
+        that you can squeeze extra performance
+        by carefully tuning the compression window,
+        which is (afaik) not yet possible in Caddy.
+    </p>
+    <p>
+        So that's the deal.
+        Let incoming requests be handled by a fast,
+        performing reverse proxy,
+        and when requests go through,
+        handle business logic with cool Python scripts.
+    </p>
+    <p>Deal?</p>
+    <h2>The boring stuff (with Python)</h2>
+    <p>
+        Finally, I'm going to tell you 
+        what the real requirement for Red Dwarf was.
+    </p>
+    <p>
+        One of the worst things that can happen 
+        to a tool you use is when 
+        <a href="https://www.youtube.com/watch?v=F8X9_Dp3ZUk">
+            you're too afraid to change it
+        </a>
+        .
+    </p>
+    <p>
+        And what I discovered is that 
+        <strong>the code for a server is kinda boring</strong>
+        .
+    </p>
+    <p>
+        So I tried to make it as short as possible.
+        Not golfed, readable, but short and expressive.
+        600 lines of Python. Readable.
+    </p>
+    <p>
+        So if you're missing a feature,
+        want to twist stuff 
+        or inspect a bug,
+        you can go take a look by yourself.
+    </p>
+    <p>
+        Take the snake by the horns, if you will.
+    </p>
 </main>

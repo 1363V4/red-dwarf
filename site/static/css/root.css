@@ -1,3 +1,5 @@
+/* root.css is for native html elements and site-wide configuration */
+
 @font-face {
     font-family: "redhat";
     font-style: normal;
@@ -42,10 +44,28 @@
     }
 }
 
-body {
+html {
     background: var(--black);
     color: var(--white);
+    /* font-size: var(--m);
+    line-height: var(--l); */
+    font-size: var(--s);
+    line-height: var(--m);
     font-family: "redros", system-ui;
+}
+
+body {
+    display: grid;
+    min-block-size: 100dvb;
+    grid-template-rows: auto 1fr auto;
+}
+
+h1, h2 {
+    font-family: "slkscr";
+    font-weight: bold;
+    padding-inline: var(--s);
+    width: fit-content;
+    color: var(--black);
 }
 
 h1 {
@@ -59,10 +79,6 @@ h2 {
     background-color: var(--white);
 }
 
-p {
-    font-size: var(--s);
-}
-
 strong {
     font-weight: normal;
     color: white;
@@ -70,6 +86,12 @@ strong {
 
 img {
     mix-blend-mode: lighten;
+}
+
+hr {
+    color: var(--blue);
+    max-width: 567px;
+    place-self: center;
 }
 
 header {
@@ -81,7 +103,8 @@ header {
     padding-inline: var(--s);
     height: fit-content;
 
-    position: sticky;
+    /* position: sticky; */
+    /* who REALLY likes sticky headers */
     inset: 0;
     z-index: 2;
 
@@ -95,9 +118,10 @@ header {
     }
 
     #side_panel {
-        margin-top: var(--xs);
-        p {
+        li {
+            line-height: var(--xs);
             width: fit-content;
+            place-self: center;
         }
     }
     #side_panel:not([opened]) {
@@ -106,7 +130,22 @@ header {
 }
 
 main {
-    padding-inline: var(--m);
+    padding-inline: var(--l);
+}
+main {
+    *:not(".gmb") {
+        margin-bottom: var(--s);
+    }
+    nav {
+        width: max-content;
+        padding-inline: var(--s);
+        border-radius: var(--s);
+        box-shadow: 0px -5px 3px -2px var(--code);
+        h2 {
+            background-color: var(--blue);
+            font-weight: normal;
+        }
+    }
 }
 
 footer {
@@ -124,13 +163,20 @@ footer {
     }
 }
 
-.button[disabled] {
-    opacity: 0.6;
-    pointer-events: none;
+code {
+    font-family: redhat;
+	font-size: inherit;
 }
 
-.gmb {
-    margin-bottom: var(--l);
+details {
+    margin-block: var(--s);
+    text-align: center;
+    color: var(--blue);
+    summary {
+        cursor: pointer;
+        color: var(--white);
+        margin-block: var(--s);
+    }
 }
 
 li {
@@ -139,9 +185,4 @@ li {
 
 code.language-markdown {
     white-space: pre-wrap;
-}
-
-pre {
-    font-size: var(--s);
-    line-break: anywhere;
 }

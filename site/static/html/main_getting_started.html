@@ -1,16 +1,107 @@
 <main>
-    <h1>Getting Started</h1>
-    <h1>NOT FINISHED!</h1>
+    <h1>Getting started</h1>
+
     <h2>Installation</h2>
-    <p>I hope to get to uv</p>
-    <p>this should mean pypi i guess</p>
-    <p>uv add red_dwarf ? redwarf ? reddwarf ?</p>
-    <p>maybe a better name</p>
-    <p>...</p>
-    <p>Thinking about it, this project could be a git clone</p>
-    <p>but i guess pypi allow version control</p>
-    <h2>Your first app (TBD)</h2>
-    <p>well, the idea is to show html and patch</p>
-    <p>stario tiles ?</p>
-    <p>or maybe a todo app?</p>
+    <p>
+        Red Dwarf is not available on PyPI yet. For now, clone the GitHub
+        repository and extract the <code>red_dwarf</code> package into your
+        project. Once it is on your Python path, you can start writing your
+        application.
+    </p>
+
+    <h2>Your first app</h2>
+    <p>
+        A Red Dwarf application is just a collection of routes returning HTML.
+        Let's build one in three small steps.
+    </p>
+    <p>
+        Start with a page that says hello.
+    </p>
+    <pre class="language-python"><code>import red_dwarf as rd
+
+&#64;rd.get(&quot;/&quot;)
+async def index(request):
+    return rd.html(&quot;&quot;&quot;
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;title&gt;Hello&lt;/title&gt;
+    &lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;main&gt;
+      &lt;h1&gt;Hello, world!&lt;/h1&gt;
+      &lt;p id=&quot;message&quot;&gt;Welcome to Red Dwarf.&lt;/p&gt;
+      &lt;button data-on:click=&quot;@get('/message')&quot;&gt;Simple Update&lt;/button&gt;
+      &lt;button data-on:click=&quot;@get('/clock')&quot;&gt;Streamed Update&lt;/button&gt;
+    &lt;/main&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    rd.run()
+</code></pre>
+    <p>Note that routes are automatically registered.</p>
+    <p>
+        Open <code>http://127.0.0.1:8080/</code> and you should see your first page.
+    </p>
+
+    <h2>Update an element</h2>
+    <p>
+        Returning a patch lets you replace part of the page without sending the
+        whole document again.
+    </p>
+    <p>
+        Careful, the request has to be triggered by a Datastar action!
+    </p>
+    <pre class="language-python"><code>import red_dwarf as rd
+
+&#64;rd.get(&quot;/message&quot;)
+async def message(request):
+    return rd.patch(&quot;&quot;&quot;
+&lt;p id=&quot;message&quot;&gt;
+  This text was updated by the server.
+&lt;/p&gt;
+&quot;&quot;&quot;)
+</code></pre>
+    <p>
+        Only the element with <code>id="message"</code> changes. Everything else stays exactly where it is.
+    </p>
+
+    <h2>Streamed updates</h2>
+    <p>
+        If a route returns a Python generator, Red Dwarf keeps the connection open and sends each patch as it is produced.
+    </p>
+    <pre class="language-python"><code>import red_dwarf as rd
+import asyncio
+
+&#64;rd.get(&quot;/clock&quot;)
+async def clock(request):
+    while True:
+        yield rd.patch(f&quot;&quot;&quot;
+&lt;p id=&quot;message&quot;&gt;
+  The time is {asyncio.get_running_loop().time():.0f}.
+&lt;/p&gt;
+&quot;&quot;&quot;)
+        await asyncio.sleep(1)
+</code></pre>
+    <p>
+        That's all there is to it.
+    </p>
+    <p>
+        Your application starts with plain HTML, and whenever something changes, you send a small HTML fragment describing the new state.
+    </p>
+    <p>
+        Or a big one! You can morph the whole HTML if you want. We call this <q>view = f(state)</q>.
+    </p>
+    <p>
+        More information on the 
+        <a href="https://data-star.dev/reference">Datastar website</a>
+        .
+    </p>
+    <p>
+        Now go build!
+    </p>
 </main>

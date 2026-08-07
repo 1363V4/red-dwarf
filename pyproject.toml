@@ -29,10 +29,10 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/1363V4/red-dwarf"
-Documentation = "https://github.com/1363V4/red-dwarf#readme"
+Homepage = "https://red.leg.ovh"
+Documentation = "https://red.leg.ovh/docs"
 Repository = "https://github.com/1363V4/red-dwarf"
-Issues = "https://github.com/1363V4/red-dwarf/issues"
+Issues = "https://github.com/1363V4/red-dwarf"
 
 [tool.uv]
 package = true

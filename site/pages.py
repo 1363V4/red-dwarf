@@ -34,3 +34,6 @@ PAGE_RED = _base_template(_html_parts['MAIN_RED'])
 PAGE_DOCS = _base_template(_html_parts['MAIN_DOCS'])
 
 ESSAY_V0 = _base_template(_html_parts['ESSAY_V0'])
+ESSAY_DATASTAR = _base_template(_html_parts['ESSAY_DATASTAR'])
+ESSAY_PYTHON = _base_template(_html_parts['ESSAY_PYTHON'])
+ESSAY_REAL = _base_template(_html_parts['ESSAY_REAL'])

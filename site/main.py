@@ -9,13 +9,16 @@ import logging
 import red_dwarf as rd
 from pages import (
     PAGE_INDEX, 
-    ESSAY_V0, 
     PAGE_ESSAYS,
     PAGE_EXAMPLES,
     PAGE_FAQ,
     PAGE_RED,
     PAGE_GETTING_STARTED,
-    PAGE_DOCS
+    PAGE_DOCS,
+    ESSAY_V0, 
+    ESSAY_DATASTAR, 
+    ESSAY_PYTHON, 
+    ESSAY_REAL, 
     )
 
 
@@ -115,7 +118,10 @@ async def time(request):
 async def essay_page(request):
     # request should be req
     d_essay = {
-        'v0': ESSAY_V0,
+        'v0.html': ESSAY_V0,
+        'datastar.html': ESSAY_DATASTAR,
+        'python.html': ESSAY_PYTHON,
+        'real.html': ESSAY_REAL,
     }
     essay = request.params.get('essay')
     page = d_essay.get(essay)

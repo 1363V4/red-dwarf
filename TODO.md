@@ -17,9 +17,14 @@
 - package: uv add red_dwarf
 
 - manque les titres des pages
-- manque les cartes de sharing
+bon ça pas trop possible avec mon setup de shlag
 
-FAIRE ESSAYS
+
+GOTO LIVE CHECKLIST
+run reload to false
+reload from cwd.parent to cwd
+
+
 PEOPLE ON THE SITE
 
 possible bug si y'a pas de static folder?

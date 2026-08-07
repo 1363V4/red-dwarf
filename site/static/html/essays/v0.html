@@ -1,70 +1,90 @@
 <main>
     <h1>The road to V0</h1>
     <p>
-        <em>Warning:</em> You are about to read 
-        the ramblings of the world's shittiest developer.
-        Proceed with caution.
+        <em>
+            Warning:
+            You are about to read 
+            the ramblings of the world's shittiest developer.
+        </em> 
     </p>
     <p>
-        So, why would you spend 4 months (?!) trying to make a server ("ASGI") in Python?
+        <em>
+            Proceed with caution.
+        </em> 
+    </p>
+    <p>
+        So, why would anyone spend 
+        <strong>4 months</strong> 
+        (?!) trying to make a server in Python?
     </p>
     <h2>We thought it would be easy</h2>
     <p>
         By god what a mistake.
-        Yes just call asycio 
-        and 90% fast 
-        but the remaining 10% 
-        the hard ground. the deep questions
-        like why make everything async. don't know. have to think.
-        or to measure.
     </p>
     <p>
-        It did <em>sound</em> easy,
-        heck, 
-        it's just <code>asyncio.start_server()</code> with extra steps.
+        It did <em>sound</em> easy!
+    </p>
+    <p>
+        Heck, 
+        we're just supposed to call <code>asyncio.start_server()</code> with extra steps!
     </p>
     <p>The bar is so low in Python!</p>
     <p>
         And yeah, writing this wrapper was kinda fast,
         and I thought I was 90% there,
-        and as always the remaining 10% were the actual hard part.
     </p>
     <p>
-        The hard questions, the devil in the details: 
-        how to handle this edge case,
-        should I make everything async,
-        should I check for this or that first,
-        should I include this feature or not,
-        should this be code or docs...
+        And as always the remaining 10% were the 
+        <strong>
+            actual hard part.
+        </strong>
+    </p>
+    <p>
+        The hard questions, the devil in the details:
+        <ul indented>
+            <li>How to handle this edge case?</li>
+            <li>Should I make everything async?</li>
+            <li>Should I check for this or that first?</li>
+            <li>Should I include this feature or not?</li>
+            <li>Should this be code or docs?</li>
+        </ul>
     </p>
     <p>
         The scary questions, the stuff I usually skip:
-        how to measure performance,
-        how to test the code,
-        how to publish on pypi...
+        <ul indented>
+            <li>How to measure performance?</li>
+            <li>How to test the code?</li>
+            <li>How to publish on Pypi?</li>
+        </ul>
     </p>
-    <p>
+    </p>
         But hey,
         that's how you grow as a software developer, right?
+    </p>
+    <p>
         Well...
     </p>
     <h2>We thought it would be cool</h2>
     <p>
-        Let's be real, it was a bit for street cred.
+        Let's be real, this was also a bit for (dev) street cred.
     </p>
     <p>
         We're always dicking around in the Datastar discord 
         about using as little code as possible 
-        (Datastar used to flex the size of "core" on the main page),
-        so this project was a mix between
-        "stripping down other frameworks to just what we need"
-        and the infamous
-        "not invented here" syndrome.
-        MAYBE REAL FW
+        (Datastar used to flex the size of "core" on the main page,
+        as a sort of "Let me guess, you NEED more?" kinda shit).
     </p>
     <p>
-        But where's the glitter
-        when people shit vibecoded liquid glassfests
+        So the initial motivation was a mix between
+        <a href="/essays/real.html">
+            "stripping down other frameworks to just what we need"
+        </a>
+        and the infamous
+        "not invented here" syndrome.
+    </p>
+    <p>
+        But where's the glitter now?
+        Now that people shit vibecoded liquid glassfests
         every 15 minutes on social media
         by abusing ChatGPepTides?
     </p>
@@ -84,31 +104,41 @@
         Something I could come back everyday,
         write slowly, write a little,
         like the crafting of a book.
+    </p>
+    <p>
         To grow through discipline,
         every day a minimal, fixed amount of work,
         in the hopes that something would happen.
     </p>
     <p>
         And what actually happened?
+    </p>
+    <p>
         Instead, I asked Claude stuff everyday.
     </p>
     <p>
         Still I handwrote everything.
-        Because as XXX said,
-        writing...
+        Because as Richard Guindon said:
+    </p>
+    <q>
+        Writing is nature's way of letting you know how sloppy your thinking is.
+    </q>
+    <p>
         And Claude is Anthropic's way
-        of telling you your ideas are terrific 
-        and could just use
+        of telling you your ideas are terrific ,
+        and could really use juuuuust
         a few more tokens.
     </p>
     <p>
         So I feel like I got the worst of both worlds.
         Like I was robbed of something.
+    </p>
+    <p>
         But I can't really say "what" yet.
     </p>
     <p>
         In the end, I learned two things:
-        <ul>
+        <ul indented>
             <li>
                 Yes, handwriting is important,
                 to sharpen your sense of what is feasible or not,
@@ -161,5 +191,4 @@
         <a href="/essays">essays</a>
         .
     </p>
-    <p>You shouldn't be worried to change it? https://www.youtube.com/watch?v=F8X9_Dp3ZUk</p>
 </main>

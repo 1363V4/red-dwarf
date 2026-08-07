@@ -2,54 +2,33 @@
 @import url("gold.css");
 @import url("root.css");
 
+/* site.css is for ids, classes and stuff */
+/* layering imports is cool! */
+
+.button[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.gmb {
+    margin-bottom: var(--l);
+}
+
 .tac {
     text-align: center;
 }
 
-body {
-    display: grid;
-    min-block-size: 100dvb;
-    grid-template-rows: auto 1fr auto;
+[hidden] {
+    display: none;
 }
 
-h1, h2 {
-    font-family: "slkscr";
-    font-weight: bold;
-    padding-inline: var(--s);
-    width: fit-content;
-    color: var(--black);
-}
-
-main {
-    *:not(".gmb") {
-        margin-bottom: var(--s);
-    }
-    nav {
-        width: max-content;
-        padding-inline: var(--s);
-        border-radius: var(--s);
-        box-shadow: 0px -5px 3px -2px var(--code);
-        h2 {
-            background-color: var(--blue);
-            font-weight: normal;
-        }
-    }
-}
-
-code {
-    font-family: redhat;
-	font-size: inherit;
-}
-
-details {
-    margin-block: var(--s);
-    text-align: center;
-    summary {
-        margin-block: var(--s);
-    }
+ul[indented] {
+    margin-left: var(--m);
+    list-style: square;
 }
 
 #title {
+    padding-block: 0;
     background: linear-gradient(0deg, var(--code), var(--black));
     background-clip: text;
     text-shadow: 0px 0px var(--code);

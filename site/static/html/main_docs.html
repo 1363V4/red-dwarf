@@ -6,7 +6,7 @@
             <p><a href="#requests">Requests</a></p>
             <p><a href="#responses">Responses</a></p>
             <p><a href="#app">App</a></p>
-            <p><a href="#before">Before you go</a></p>
+            <p><a href="#lifecycle">Lifecycle</a></p>
         </nav>
     </div>
     <h1>Reference</h1>
@@ -23,23 +23,23 @@
     <code>
 @rd.get("/users")
 async def get_users(request):
-return rd.html(...)
+    return rd.html(...)
 
 @rd.post("/new_user")
 async def new_user(request):
-return rd.html(...)
+    return rd.html(...)
 
 @rd.put("/rename_user")
 async def rename_user(request):
-return rd.html(...)
+    return rd.html(...)
 
 @rd.delete("/remove_user")
 async def remove_user(request):
-return rd.html(...)</code>
+    return rd.html(...)</code>
     </pre>
     <p class="gmb">
         You can also use parameters in your routes and get back these
-        values in your handler (see the "Requests" chapter)
+        values in your handler.
     </p>
     <h2 id="requests">Requests</h2>
     <p>Request is the only stateful object in Red Dwarf.</p>
@@ -52,25 +52,25 @@ return rd.html(...)</code>
     <code>
 @rd.get("/docs/&lt;folder_id&gt;/&lt;document_id&gt;")
 async def serve_document(request):
-print(request.method)
-# 'GET'
-print(request.raw_path)
-# '/docs/folder18/document4?page=42'
-print(request.path)
-# '/docs/folder18/document4'
-print(request.params)
-# {'folder_id': 'folder18', 'document_id': 'document4'}
-print(request.query)
-# {'page': ['42']}
-print(request.headers)
-# {'host': '...', ...}
-print(request.body)
-# b''
-print(request.cookies)
-# {'user_id': ...}
-print(request.signals)
-# {'theme': 'light'}
-return rd.html(...)</code>
+    print(request.method)
+    # 'GET'
+    print(request.raw_path)
+    # '/docs/folder18/document4?page=42'
+    print(request.path)
+    # '/docs/folder18/document4'
+    print(request.params)
+    # {'folder_id': 'folder18', 'document_id': 'document4'}
+    print(request.query)
+    # {'page': ['42']}
+    print(request.headers)
+    # {'host': '...', ...}
+    print(request.body)
+    # b''
+    print(request.cookies)
+    # {'user_id': ...}
+    print(request.signals)
+    # {'theme': 'light'}
+    return rd.html(...)</code>
     </pre>
     <p class="gmb">As you see, Datastar signals are automatically parsed.</p>
     <h2 id="responses">Responses</h2>
@@ -80,17 +80,17 @@ return rd.html(...)</code>
     <code>
 @rd.get("/")
 async def home(request):
-return rd.html(&lt;h1&gt;Hello World!&lt;/h1&gt;)
+    return rd.html(&lt;h1&gt;Hello World!&lt;/h1&gt;)
 
 @rd.get("/red")
 async def red(request):
-headers = ["X-Accel-Buffering: No"]
-user_id = "123"
-return rd.html(
-&lt;h1&gt;Hello World!&lt;/h1&gt;
-headers=headers,
-cookies={'user_id': user_id}
-)</code>
+    headers = ["X-Accel-Buffering: No"]
+    user_id = "123"
+    return rd.html(
+    &lt;h1&gt;Hello World!&lt;/h1&gt;
+    headers=headers,
+    cookies={'user_id': user_id}
+    )</code>
     </pre>
     <p>
         You can also use <code>rd.empty()</code> to return an empty
@@ -98,16 +98,12 @@ cookies={'user_id': user_id}
     </p>
     <pre class="language-python">
     <code>
-@rd.get("/v1")
-async def old_version(request):
-return rd.redirect("/v2")
-
 @rd.post("/command")
 async def handle_command(request):
-user_id = request.cookies.get("user_id")
-if user_id:
-database.process(user_id)
-return rd.empty()</code>
+    user_id = request.cookies.get("user_id")
+    if user_id:
+        database.process(user_id)
+    return rd.empty()</code>
     </pre>
     <p>
         Finally, you can use <code>rd.patch()</code> to any Datastar
@@ -117,13 +113,22 @@ return rd.empty()</code>
     <code>
 @rd.get("/sse")
 async def sse_stream(request):
-async for message in pubsub_channel():
-yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
+    async for message in pubsub_channel():
+        yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
     </pre>
-    <p class="gmb">
+    <p>
         The HTML in <code>rd.patch()</code> will replace the one on the
         page. Magic!
     </p>
+    <p class="gmb">
+        Occasionally, you may redirect users if resources moved:
+    </p>
+    <pre class="language-python">
+    <code>
+@rd.get("/v1")
+async def old_version(request):
+    return rd.redirect("/v2")</code>
+    </pre>
     <h2 id="app">App</h2>
     <p>That's all!</p>
     <p>You now know how to use Red Dwarf.</p>
@@ -131,7 +136,7 @@ yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code
     <pre class="language-python">
     <code>
 if __name__ == "__main__":
-rd.run(reload=True)</code>
+    rd.run(reload=True)</code>
     </pre>
     <p>You're good to go!</p>
     <p>By default, Red Dwarf will serve on localhost.</p>
@@ -147,10 +152,9 @@ rd.run(reload=True)</code>
     <pre class="language-python gmb">
     <code>
 if __name__ == "__main__":
-rd.run(sock="/unix.sock", reload=True)</code>
+    rd.run(sock="/unix.sock", reload=True)</code>
     </pre>
-    <h2 id="before">Before you go</h2>
-    <p>One last thing.</p>
+    <h2 id="lifecycle">Lifecycle</h2>
     <p>
         Red Dwarf gives you useful <code>before_request</code> /
         <code>after_response</code> decorators.
@@ -162,16 +166,18 @@ rd.run(sock="/unix.sock", reload=True)</code>
 @rd.before_request
 def cookie_check(request):
 if not request.get("user_id"):
-return rd.redirect("/")
+    return rd.redirect("/")
 
 @rd.after_response
 def log(request):
-logger.info("Another successful response on f{request.path}!")</code>
+    logger.info(f"Another successful response on {request.path}!")</code>
     </pre>
     <h2>Off you go!</h2>
     <p>
-        You can continue by reading the FAQ, the Cookbook or the Essays
-        (links)
+        You can continue by
+        studying the <a href="/examples">Examples</a>,
+        checking the <a href="/faq">FAQ</a>,
+        or reading the <a href="/essays">Essays</a>.
     </p>
-    <p>Go build something!</p>
+    <p><strong>Have fun!</strong></p>
 </main>

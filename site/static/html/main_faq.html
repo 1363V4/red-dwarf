@@ -1,21 +1,66 @@
 <main>
     <h1>FAQ</h1>
+
     <details name="faq">
         <summary>Can I use sync functions?</summary>
         No. Everything in RD is async by default, except <code>run</code>.
     </details>
+
     <details name="faq">
-        <summary>Is there type matching on regex routes?</summary>
-        No. They're strings.
+        <summary>Can I use Red Dwarf without Datastar?</summary>
+        No. I put something like 20 lines of helper code to help you use
+        Datastar. Do you really want to waste all this good work? That's
+        what I thought
     </details>
+
     <details name="faq">
-        <summary>Is there a test client?</summary>
-        Not for the moment.
+        <summary>How to serve static pages?</summary>
+        However you like. A straightforward way is to load them into memory.
+<pre class="language-python">
+<code>
+with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
+    PAGE_HOME = f.read()</code>
+</pre>
     </details>
+
     <details name="faq">
-        <summary>What is the test coverage of Red Dwarf?</summary>
-        0% for the moment.
+        <summary>How does Red Dwarf handle static files?</summary>
+        We use etags and the browser does the rest.
     </details>
+
+    <details name="faq">
+        <summary>Does Red Dwarf provide database integrations?</summary>
+        No.
+    </details>
+
+    <details name="faq">
+        <summary>How do I enable compression?</summary>
+        It's not in Red Dwarf yet, we recommend letting your reverse proxy handle it.
+    </details>
+
+    <details name="faq">
+        <summary>How does logging work?</summary>
+        With <code class="language-python">logging</code>.
+        You can access Red Dwarf logger from your main file, for example for silencing it: <pre class="language-python">
+<code>
+import logging
+
+logging.getLogger("red-dwarf").disabled = True</code>
+</pre>
+    If you don't setup logging, no worries, it will just get ignored.
+    What Red Dwarf logs: Info: incoming requests, startup, restart, shutdown / Error: error in handling request (with traceback),
+    </details>
+
+    <details name="faq">
+        <summary>Which responses can I send?</summary>
+        Red Dwarf can return BAD_REQUEST, NOT_MODIFIED, NOT_FOUND,
+        INTERNAL_SERVER_ERROR. 
+        And <strong>you</strong> can send OK and TEMPORARY_REDIRECT.
+        These should be the only two codes you need.
+        I haven't found the best way yet to return
+        being a teapot.
+    </details>
+
     <details name="faq">
         <summary>Is it fast?</summary>
         I didn't test it yet.
@@ -24,6 +69,7 @@
         One thig I'm interested in is seing if using uvloop
         brings a significant boost.
     </details>
+
     <details name="faq">
         <summary>Is Red Dwarf secure?</summary>
         Yes, thanks to Bitcoin-style encryption 👌
@@ -31,66 +77,47 @@
         You still have to do stuff like
         authentication and rate limiting by ourself, but that's by design.
     </details>
-    <details name="faq">
-        <summary>How to serve static pages?</summary>
-        However you like. A straightforward way is to load them into memory.
-<pre class="language-python">
-<code>with open(HTML_PATH / "index.html", "r", encoding="utf8") as f:
-PAGE_HOME = f.read()
-</code></pre>
-    </details>
-    <details name="faq">
-        <summary>How does Red Dwarf handle static files?</summary>
-        We use etags and the browser does the rest.
-    </details>
-    <details name="faq">
-        <summary>Does Red Dwarf provide a database?</summary>
-        No.
-    </details>
-    <details name="faq">
-        <summary>How to enable compression?</summary>
-        It's not in Red Dwarf yet, we recommend letting your reverse proxy handle it.
-    </details>
-    <details name="faq">
-        <summary>How does logging work?</summary>
-        With <code class="language-python">logging</code>.
-        You can access Red Dwarf logger from your main file, for example for silencing it: <pre class="language-python">
-<code>import logging
 
-logging.getLogger("red-dwarf").disabled = True
-</code></pre>
-    If you don't setup logging, no worries, it will just get ignored.
-    What Red Dwarf logs: Info: incoming requests, startup, restart, shutdown / Error: error in handling request (with traceback),
+    <details name="faq">
+        <summary>Is there a test client?</summary>
+        Not for the moment.
     </details>
+
+    <details name="faq">
+        <summary>What is the test coverage of Red Dwarf?</summary>
+        0% for the moment.
+    </details>
+
+    <details name="faq">
+        <summary>Is there type matching on regex routes?</summary>
+        No. They're strings.
+    </details>
+
     <details name="faq">
         <summary>Do you have signals or a pubsub mechanism?</summary>
         No.
     </details>
-    <details name="faq">
-        <summary>Can I use Red Dwarf without Datastar?</summary>
-        No. I put something like 20 lines of helper code to help you use
-        Datastar. Do you really want to waste all this good work? That's
-        what I thought
-    </details>
-    <details name="faq">
-        <summary>Which responses can I send?</summary>
-        OK, BAD_REQUEST, TEMPORARY_REDIRECT, NOT_MODIFIED, NOT_FOUND,
-        INTERNAL_SERVER_ERROR. I haven't found the best way yet to return
-        being a teapot.
-    </details>
-    <details name="faq">
-        <summary>What are good resources on Red Dwarf?</summary>
-        The code. Good and short.
-    </details>
+
     <details name="faq">
         <summary>What did you use for syntax highlighting on this site?</summary>
         The very good <a href="https://prismjs.com/">prism.js</a> library.
     </details>
+
+    <details name="faq">
+        <summary>Which fonts do you use on this website?</summary>
+        Red Rose, Red Hat and Silkscreen.
+    </details>
+
     <details name="faq">
         <summary>Why did you create Red Dwarf?</summary>
         People liked Datastar's examples but kept asking for backend code.
         Because Datastar is backend agnostic, it was often a though question
         to answer. So I decided to create the simplest framework ever, in
         Python, to really hammer this down.
+    </details>
+
+    <details name="faq">
+        <summary>What are good resources on Red Dwarf?</summary>
+        The code. Good and short.
     </details>
 </main>
