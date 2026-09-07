@@ -16,18 +16,23 @@ from html import escape
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from pathlib import Path
-from pprint import pprint
 from urllib.parse import parse_qs, urlsplit
 
 # Hello and welcome!
 # This code is intended to be read by humans.
-# What is a server?
-# a miserable little pile of routes.
-# that is, functions which map requests to html responses
+# ---
+# "What is a server?
+# A miserable little pile of routes."
+# server = functions mapping requests to html responses
 # and this is all we'll do.
 
+_routes = []  # BEHOLD: ALL THE STATE WE NEED!
+# and a route is this:
+# an HTTP method, a regex strings, the parameters we want to get back, and the fn to call
 Route = namedtuple("Route", ["method", "regex", "param_names", "handler"])
-_routes = []  # BEHOLD THE STATE
+
+
+# Next we'll use a dataclass to parse requests.
 
 
 @dataclass(slots=True)
@@ -40,30 +45,22 @@ class Request:
     body: bytes
     signals: dict
     cookies: dict
-    # Now I know what you are going to say
-    # "But cookies are included in headers!"
-    # Yes. But we design for convenience,
-    # sometimes that means redundancy,
-    # or straying from the spec.
-    # For the same reason,
-    # we're adding a cookie arg to Response.
     params: dict = field(default_factory=dict)
-    # params is the only parameter we can't infer from the Request content
-    # because we have to wait for the server to match queried path
-    # against registered routes.
-    # Hence the default_factory
 
+
+# cookies: request.cookies is here for convenience, since they're already in request.headers
+# params: we have to wait for the server to match queried path against registered routes.
+#  		  This is why we use a default factory here.
+# PS: Adam said we could use @property for stuff like body, params...
 
 Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
 
-# And finally some control flow,
-# async functions to call before parsing a request
-# or after sending a response.
-# _after_response functions will not run on bad requests.
-# _after_event will run after sse patch.
+# Middleware:
+# From now, I only consider before request
+# A generic @on_response feels like a code smell to me
+# especially since by design we rely on Caddy
+# but I'm open to debate
 _before_request = []
-_after_response = []
-_after_event = []
 
 _STATIC_DIR = Path.cwd() / "static"
 
@@ -75,15 +72,10 @@ def before_request(fn):
     return fn
 
 
-def after_response(fn):
-    _after_response.append(fn)
-    return fn
-
-
 # SECURITY
 
 MAX_BODY_SIZE = 1_048_576  # bytes
-MAX_HEADER_LINE = 8192  # bytes
+MAX_HEADER_LINE = 8_192  # bytes
 READ_TIMEOUT = 10  # s
 
 # LOGGING
@@ -99,8 +91,7 @@ def _path_to_regex(path):
     pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)
     # i see the case for wildcards, like in /path/*
     # but i'd prefer not to write the code
-    # and force a /path/<_> workaround
-    # match/case style
+    # and force users into a /path/<_> workaround
     return re.compile(f"^{pattern}$"), names
 
 
@@ -155,59 +146,60 @@ async def _read_request(reader):
     try:
         async with asyncio.timeout(READ_TIMEOUT):
             line = await reader.readline()
+
+            if not line:
+                return None
+
+            parts = line.decode("utf-8", errors="replace").split()
+            if len(parts) < 2:
+                return None
+
+            method, raw_path = parts[0], parts[1]
+            logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
+
+            split = urlsplit(raw_path)
+            path = split.path or "/"
+            query = parse_qs(split.query)
+            # i don't see why you'd need more info from the split
+
+            headers = {}
+            while True:
+                header_line = await reader.readline()
+                # Read headers until the blank separator line. (put link to spec)
+                if header_line in (b"\r\n", b"\n", b""):
+                    break
+                if len(header_line) > MAX_HEADER_LINE:
+                    return None
+                decoded = header_line.decode("utf-8", errors="replace").strip()
+                if ":" not in decoded:
+                    # Skip malformed header lines instead of crashing.
+                    continue
+                name, value = decoded.split(":", 1)
+                headers[name.strip().lower()] = (
+                    value.strip()
+                )  # headers are overwritten because we don't like shenanigans
+
+            cookies = {}
+            if cookie := headers.get("cookie"):
+                try:
+                    c = SimpleCookie(cookie)
+                    for key, morsel in c.items():
+                        cookies[key] = morsel.value
+                except Exception:
+                    pass
+
+            body = b""
+            try:
+                content_length = int(headers.get("content-length", 0))
+                if 0 < content_length < MAX_BODY_SIZE:
+                    body = await reader.readexactly(content_length)
+            except ValueError:
+                return None
+
+            signals = _read_signals(headers, method, query, body)
+
     except TimeoutError:
         return None
-
-    if not line:
-        return None
-
-    parts = line.decode("utf-8", errors="replace").split()
-    if len(parts) < 2:
-        return None
-
-    method, raw_path = parts[0], parts[1]
-    logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
-
-    split = urlsplit(raw_path)
-    path = split.path or "/"
-    query = parse_qs(split.query)
-    # i don't see why you'd need more info from the split
-
-    headers = {}
-    while True:
-        header_line = await reader.readline()
-        # Read headers until the blank separator line. (put link to spec)
-        if header_line in (b"\r\n", b"\n", b""):
-            break
-        if len(header_line) > MAX_HEADER_LINE:
-            return None
-        decoded = header_line.decode("utf-8", errors="replace").strip()
-        if ":" not in decoded:
-            # Skip malformed header lines instead of crashing.
-            continue
-        name, value = decoded.split(":", 1)
-        headers[name.strip().lower()] = (
-            value.strip()
-        )  # headers are overwritten because we don't like shenanigans
-
-    cookies = {}
-    if cookie := headers.get("cookie"):
-        try:
-            c = SimpleCookie(cookie)
-            for key, morsel in c.items():
-                cookies[key] = morsel.value
-        except Exception as e:
-            pass
-
-    body = b""
-    try:
-        content_length = int(headers.get("content-length", 0))
-        if 0 < content_length < MAX_BODY_SIZE:
-            body = await reader.readexactly(content_length)
-    except ValueError:
-        pass
-
-    signals = _read_signals(headers, method, query, body)
 
     return Request(method, raw_path, path, query, headers, body, signals, cookies)
 
@@ -253,6 +245,10 @@ def redirect(location):
 
 async def _send_full(writer, response):
     body, status, content_type, headers = response
+    # ... if we talk performance, just put uvloop bro
+    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    if not isinstance(body, bytes):
+        body = body.encode("utf-8")
     header_buffer = [
         f"HTTP/1.1 {status.value} {status.phrase}",
         f"Content-Length: {len(body)}",
@@ -263,11 +259,6 @@ async def _send_full(writer, response):
         header_buffer += [f"{header}"]
     header = "\r\n".join(header_buffer)
     header += "\r\n\r\n"
-
-    # ... if we talk performance, just put uvloop bro
-    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    if not isinstance(body, bytes):
-        body = body.encode("utf-8")
 
     writer.write(header.encode("utf-8") + body)
     await writer.drain()
@@ -343,11 +334,11 @@ async def _handle(reader, writer):
                     mime, _ = mimetypes.guess_type(candidate.name)
                     # Fallback MIME types, maybe i'm missing some
                     mime = mime or {
-                        '.css': 'text/css',
-                        '.js': 'application/javascript',
-                        '.svg': 'image/svg+xml',
-                        '.png': 'image/png',
-                    }.get(candidate.suffix.lower(), 'application/octet-stream')
+                        ".css": "text/css",
+                        ".js": "application/javascript",
+                        ".svg": "image/svg+xml",
+                        ".png": "image/png",
+                    }.get(candidate.suffix.lower(), "application/octet-stream")
 
                     body = candidate.read_bytes()
                     await _send_full(
@@ -384,8 +375,6 @@ async def _handle(reader, writer):
             try:
                 async with aclosing(response) as gen:
                     await _send_sse_headers(writer)
-                    for fn in _after_event:
-                        event = await fn(request, event)
                     async for event in gen:
                         await _send_sse_event(writer, event)
             except (
@@ -397,15 +386,10 @@ async def _handle(reader, writer):
                 pass
         else:
             response = await response
-            for fn in _after_response:
-                modified_response = fn(request, response)
-                if modified_response is not None:
-                    response = modified_response
             await _send_full(writer, response)
 
     except Exception as e:
-        logger.error(f"Error in handling request: {e}")
-        traceback.print_exc()
+        logger.exception("Error handling request.")
         await _send_full(
             writer,
             Response(
@@ -451,7 +435,7 @@ async def _serve(host, port, sock):
     async with server:
         try:
             await server.serve_forever()
-        except asyncio.CancelledError: # expected on shutdown
+        except asyncio.CancelledError:  # expected on shutdown
             pass
 
 
