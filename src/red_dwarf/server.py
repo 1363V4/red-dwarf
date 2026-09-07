@@ -8,7 +8,6 @@ import os
 import re
 import signal
 import time
-import traceback
 from collections import namedtuple
 from contextlib import aclosing
 from dataclasses import dataclass, field
@@ -76,7 +75,10 @@ def before_request(fn):
 
 MAX_BODY_SIZE = 1_048_576  # bytes
 MAX_HEADER_LINE = 8_192  # bytes
-READ_TIMEOUT = 10  # s
+REQUEST_TIMEOUT = 10  # s
+KEEPALIVE_TIMEOUT = 150  # s
+# Has to be more than Caddy's 120s timeout
+MAX_REQUESTS_PER_CONNECTION = 1000
 
 # LOGGING
 
@@ -138,13 +140,13 @@ def _read_signals(headers, method, query, body):
     return json.loads(data) if data else {}
 
 
-async def _read_request(reader):
+async def _read_request(reader, timeout):
     """
     unsure if fit for http2/3
     should be called _parse_request? but there's a read timeout
     """
     try:
-        async with asyncio.timeout(READ_TIMEOUT):
+        async with asyncio.timeout(timeout):
             line = await reader.readline()
 
             if not line:
@@ -165,7 +167,7 @@ async def _read_request(reader):
             headers = {}
             while True:
                 header_line = await reader.readline()
-                # Read headers until the blank separator line. (put link to spec)
+                # We read headers until the blank separator line.
                 if header_line in (b"\r\n", b"\n", b""):
                     break
                 if len(header_line) > MAX_HEADER_LINE:
@@ -178,6 +180,9 @@ async def _read_request(reader):
                 headers[name.strip().lower()] = (
                     value.strip()
                 )  # headers are overwritten because we don't like shenanigans
+
+            if "chunked" in headers.get("transfer-encoding", "").lower():
+                return None  # yeah, we don't do that here...
 
             cookies = {}
             if cookie := headers.get("cookie"):
@@ -243,10 +248,11 @@ def redirect(location):
 # WRITERS
 
 
-async def _send_full(writer, response):
+async def _send_full(writer, response, connection=None):
     body, status, content_type, headers = response
-    # ... if we talk performance, just put uvloop bro
-    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    # ok... here we unpack
+    # because namedtuple is not mutable...
+    # so... maybe use a dataclass you dumb dumb?
     if not isinstance(body, bytes):
         body = body.encode("utf-8")
     header_buffer = [
@@ -255,13 +261,24 @@ async def _send_full(writer, response):
     ]
     if content_type:
         header_buffer += [f"Content-Type: {content_type}"]
+    if connection:
+        header_buffer += [f"Connection: {connection}"]
     for header in headers:
         header_buffer += [f"{header}"]
     header = "\r\n".join(header_buffer)
     header += "\r\n\r\n"
+    header = header.encode("utf-8")
 
-    writer.write(header.encode("utf-8") + body)
+    writer.write(header + body)
     await writer.drain()
+
+
+async def _send_server_error(writer):
+    await _send_full(
+        writer,
+        Response("Server Error", HTTPStatus.INTERNAL_SERVER_ERROR, "text/plain", []),
+        connection="close",
+    )
 
 
 async def _send_sse_headers(writer):
@@ -269,7 +286,8 @@ async def _send_sse_headers(writer):
         "HTTP/1.1 200 OK",
         "Content-Type: text/event-stream",
         "Cache-Control: no-cache",
-        "Connection: keep-alive",
+        # "Connection: keep-alive", I have to check with the discord on that one
+        "Connection: close",
     ]
 
     header = "\r\n".join(header_buffer)
@@ -300,6 +318,60 @@ def _find_handler(method, path):
     return None, {}
 
 
+# 3 little helpers before te real work begins
+
+
+def _serve_static(request):
+    candidate = _STATIC_DIR / request.path.removeprefix("/static/")
+    candidate = candidate.resolve()
+
+    if not (candidate.is_relative_to(_STATIC_DIR) and candidate.is_file()):
+        return Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", [])
+
+    stat = candidate.stat()
+    etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+
+    if request.headers.get("if-none-match") == etag:
+        return Response("", HTTPStatus.NOT_MODIFIED, None, [f"ETag: {etag}"])
+
+    mime, _ = mimetypes.guess_type(candidate.name)
+    # Fallback MIME types, maybe i'm missing some
+    mime = mime or {
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+    }.get(candidate.suffix.lower(), "application/octet-stream")
+
+    body = candidate.read_bytes()
+    return Response(body, HTTPStatus.OK, mime, [f"ETag: {etag}"])
+
+
+def _should_keep_alive(request):
+    connection = request.headers.get("connection", "").lower()
+    if connection == "close":
+        return False
+    if connection == "keep-alive":
+        return True
+    # No explicit header: HTTP/1.1 defaults to keep-alive, HTTP/1.0 to close.
+    return request.version == "HTTP/1.1"
+
+
+async def _stream_sse(writer, gen):
+    try:
+        async with aclosing(gen) as stream:
+            await _send_sse_headers(writer)
+            async for event in stream:
+                await _send_sse_event(writer, event)
+    except (
+        asyncio.CancelledError,
+        BrokenPipeError,
+        ConnectionResetError,
+        ConnectionAbortedError,
+    ):
+        pass
+
+
 async def _handle(reader, writer):
     # this is a callback after the connection has been initialized
     # reader is a StreamReader object,
@@ -308,97 +380,62 @@ async def _handle(reader, writer):
     # we read from the stream, parse it into a "request"
     # find its "route" and write stuff. done.
 
+    keep_alive = True
+    requests_served = 0
+
     try:
-        request = await _read_request(reader)
-        if request is None:
-            await _send_full(
-                writer,
-                Response("Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []),
-            )
-            return
-
-        if request.method == "GET" and request.path.startswith("/static/"):
-            candidate = _STATIC_DIR / request.path.removeprefix("/static/")
-            candidate = candidate.resolve()
-
-            if candidate.is_relative_to(_STATIC_DIR) and candidate.is_file():
-                stat = candidate.stat()
-                etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
-
-                if request.headers.get("if-none-match") == etag:
-                    await _send_full(
-                        writer,
-                        Response("", HTTPStatus.NOT_MODIFIED, None, [f"ETag: {etag}"]),
-                    )
-                else:
-                    mime, _ = mimetypes.guess_type(candidate.name)
-                    # Fallback MIME types, maybe i'm missing some
-                    mime = mime or {
-                        ".css": "text/css",
-                        ".js": "application/javascript",
-                        ".svg": "image/svg+xml",
-                        ".png": "image/png",
-                    }.get(candidate.suffix.lower(), "application/octet-stream")
-
-                    body = candidate.read_bytes()
-                    await _send_full(
-                        writer,
-                        Response(body, HTTPStatus.OK, mime, [f"ETag: {etag}"]),
-                    )
-                return
-            else:
+        while keep_alive:
+            timeout = REQUEST_TIMEOUT if requests_served == 0 else KEEPALIVE_TIMEOUT
+            request = await _read_request(reader, timeout)
+            if request is None:
                 await _send_full(
                     writer,
-                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+                    Response("Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []),
+                    connection="close",
                 )
                 return
 
-        handler, params = _find_handler(request.method, request.path)
-        request.params = params
-
-        for fn in _before_request:
-            early_response = fn(request)
-            if early_response is not None:
-                await _send_full(writer, early_response)
-                return
-
-        if handler is None:
-            await _send_full(
-                writer,
-                Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+            keep_alive = (
+                _should_keep_alive(request)
+                and requests_served < MAX_REQUESTS_PER_CONNECTION
             )
-            return
+            connection = "keep-alive" if keep_alive else "close"
 
-        response = handler(request)
+            if request.method == "GET" and request.path.startswith("/static/"):
+                response = _serve_static(request)
+            else:
+                handler, params = _find_handler(request.method, request.path)
+                request.params = params
 
-        if inspect.isasyncgen(response):  # sse patch
-            try:
-                async with aclosing(response) as gen:
-                    await _send_sse_headers(writer)
-                    async for event in gen:
-                        await _send_sse_event(writer, event)
-            except (
-                asyncio.CancelledError,
-                BrokenPipeError,
-                ConnectionResetError,
-                ConnectionAbortedError,
-            ):
-                pass
-        else:
-            response = await response
-            await _send_full(writer, response)
+                response = None
+                for fn in _before_request:
+                    response = fn(request)
+                    if response is not None:
+                        break
+
+                if response is None:
+                    if handler is None:
+                        response = (
+                            Response(
+                                "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
+                            ),
+                        )
+                    else:
+                        response = handler(request)
+
+                        if inspect.isasyncgen(response):  # sse patch
+                            await _stream_sse(writer, response)
+                            return  # if i do indeed close
+
+                        else:
+                            response = await response
+
+            await _send_full(writer, response, connection=connection)
+            requests_served += 1
 
     except Exception as e:
         logger.exception("Error handling request.")
-        await _send_full(
-            writer,
-            Response(
-                "Server Error",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-                "text/plain",
-                [],
-            ),
-        )
+        await _send_server_error(writer)
 
     finally:
         writer.close()
@@ -514,3 +551,7 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
             asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:
         logger.info("Server shutdown.")
+
+
+# ... if we talk performance, just put uvloop bro
+# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
