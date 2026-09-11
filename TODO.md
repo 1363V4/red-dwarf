@@ -19,11 +19,14 @@
 - manque les titres des pages
 bon ça pas trop possible avec mon setup de shlag
 
+FUCK
+small est plus small
+j'ai pas style la scrollbar
+fuck on verra après les vacances
 
 GOTO LIVE CHECKLIST
 run reload to false
 reload from cwd.parent to cwd
-
 
 PEOPLE ON THE SITE
 
