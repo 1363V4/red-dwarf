@@ -8,7 +8,6 @@ import os
 import re
 import signal
 import time
-import traceback
 from collections import namedtuple
 from contextlib import aclosing
 from dataclasses import dataclass, field
@@ -16,18 +15,23 @@ from html import escape
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from pathlib import Path
-from pprint import pprint
 from urllib.parse import parse_qs, urlsplit
 
 # Hello and welcome!
 # This code is intended to be read by humans.
-# What is a server?
-# a miserable little pile of routes.
-# that is, functions which map requests to html responses
+# ---
+# "What is a server?
+# A miserable little pile of routes."
+# server = functions mapping requests to html responses
 # and this is all we'll do.
 
+_routes = []  # BEHOLD: ALL THE STATE WE NEED!
+# and a route is this:
+# an HTTP method, a regex strings, the parameters we want to get back, and the fn to call
 Route = namedtuple("Route", ["method", "regex", "param_names", "handler"])
-_routes = []  # BEHOLD THE STATE
+
+
+# Next we'll use a dataclass to parse requests.
 
 
 @dataclass(slots=True)
@@ -40,30 +44,22 @@ class Request:
     body: bytes
     signals: dict
     cookies: dict
-    # Now I know what you are going to say
-    # "But cookies are included in headers!"
-    # Yes. But we design for convenience,
-    # sometimes that means redundancy,
-    # or straying from the spec.
-    # For the same reason,
-    # we're adding a cookie arg to Response.
     params: dict = field(default_factory=dict)
-    # params is the only parameter we can't infer from the Request content
-    # because we have to wait for the server to match queried path
-    # against registered routes.
-    # Hence the default_factory
 
+
+# cookies: request.cookies is here for convenience, since they're already in request.headers
+# params: we have to wait for the server to match queried path against registered routes.
+#  		  This is why we use a default factory here.
+# PS: Adam said we could use @property for stuff like body, params...
 
 Response = namedtuple("Response", ["body", "status", "content_type", "headers"])
 
-# And finally some control flow,
-# async functions to call before parsing a request
-# or after sending a response.
-# _after_response functions will not run on bad requests.
-# _after_event will run after sse patch.
+# Middleware:
+# From now, I only consider before request
+# A generic @on_response feels like a code smell to me
+# especially since by design we rely on Caddy
+# but I'm open to debate
 _before_request = []
-_after_response = []
-_after_event = []
 
 _STATIC_DIR = Path.cwd() / "static"
 
@@ -75,16 +71,14 @@ def before_request(fn):
     return fn
 
 
-def after_response(fn):
-    _after_response.append(fn)
-    return fn
-
-
 # SECURITY
 
 MAX_BODY_SIZE = 1_048_576  # bytes
-MAX_HEADER_LINE = 8192  # bytes
-READ_TIMEOUT = 10  # s
+MAX_HEADER_LINE = 8_192  # bytes
+REQUEST_TIMEOUT = 10  # s
+KEEPALIVE_TIMEOUT = 150  # s
+# Has to be more than Caddy's 120s timeout
+MAX_REQUESTS_PER_CONNECTION = 1000
 
 # LOGGING
 
@@ -99,8 +93,7 @@ def _path_to_regex(path):
     pattern = re.sub(r"\<(\w+)\>", r"([^/]+)", path)
     # i see the case for wildcards, like in /path/*
     # but i'd prefer not to write the code
-    # and force a /path/<_> workaround
-    # match/case style
+    # and force users into a /path/<_> workaround
     return re.compile(f"^{pattern}$"), names
 
 
@@ -147,67 +140,71 @@ def _read_signals(headers, method, query, body):
     return json.loads(data) if data else {}
 
 
-async def _read_request(reader):
+async def _read_request(reader, timeout):
     """
     unsure if fit for http2/3
     should be called _parse_request? but there's a read timeout
     """
     try:
-        async with asyncio.timeout(READ_TIMEOUT):
+        async with asyncio.timeout(timeout):
             line = await reader.readline()
+
+            if not line:
+                return None
+
+            parts = line.decode("utf-8", errors="replace").split()
+            if len(parts) < 2:
+                return None
+
+            method, raw_path = parts[0], parts[1]
+            logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
+
+            split = urlsplit(raw_path)
+            path = split.path or "/"
+            query = parse_qs(split.query)
+            # i don't see why you'd need more info from the split
+
+            headers = {}
+            while True:
+                header_line = await reader.readline()
+                # We read headers until the blank separator line.
+                if header_line in (b"\r\n", b"\n", b""):
+                    break
+                if len(header_line) > MAX_HEADER_LINE:
+                    return None
+                decoded = header_line.decode("utf-8", errors="replace").strip()
+                if ":" not in decoded:
+                    # Skip malformed header lines instead of crashing.
+                    continue
+                name, value = decoded.split(":", 1)
+                headers[name.strip().lower()] = (
+                    value.strip()
+                )  # headers are overwritten because we don't like shenanigans
+
+            if "chunked" in headers.get("transfer-encoding", "").lower():
+                return None  # yeah, we don't do that here...
+
+            cookies = {}
+            if cookie := headers.get("cookie"):
+                try:
+                    c = SimpleCookie(cookie)
+                    for key, morsel in c.items():
+                        cookies[key] = morsel.value
+                except Exception:
+                    pass
+
+            body = b""
+            try:
+                content_length = int(headers.get("content-length", 0))
+                if 0 < content_length < MAX_BODY_SIZE:
+                    body = await reader.readexactly(content_length)
+            except ValueError:
+                return None
+
+            signals = _read_signals(headers, method, query, body)
+
     except TimeoutError:
         return None
-
-    if not line:
-        return None
-
-    parts = line.decode("utf-8", errors="replace").split()
-    if len(parts) < 2:
-        return None
-
-    method, raw_path = parts[0], parts[1]
-    logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
-
-    split = urlsplit(raw_path)
-    path = split.path or "/"
-    query = parse_qs(split.query)
-    # i don't see why you'd need more info from the split
-
-    headers = {}
-    while True:
-        header_line = await reader.readline()
-        # Read headers until the blank separator line. (put link to spec)
-        if header_line in (b"\r\n", b"\n", b""):
-            break
-        if len(header_line) > MAX_HEADER_LINE:
-            return None
-        decoded = header_line.decode("utf-8", errors="replace").strip()
-        if ":" not in decoded:
-            # Skip malformed header lines instead of crashing.
-            continue
-        name, value = decoded.split(":", 1)
-        headers[name.strip().lower()] = (
-            value.strip()
-        )  # headers are overwritten because we don't like shenanigans
-
-    cookies = {}
-    if cookie := headers.get("cookie"):
-        try:
-            c = SimpleCookie(cookie)
-            for key, morsel in c.items():
-                cookies[key] = morsel.value
-        except Exception as e:
-            pass
-
-    body = b""
-    try:
-        content_length = int(headers.get("content-length", 0))
-        if 0 < content_length < MAX_BODY_SIZE:
-            body = await reader.readexactly(content_length)
-    except ValueError:
-        pass
-
-    signals = _read_signals(headers, method, query, body)
 
     return Request(method, raw_path, path, query, headers, body, signals, cookies)
 
@@ -251,26 +248,37 @@ def redirect(location):
 # WRITERS
 
 
-async def _send_full(writer, response):
+async def _send_full(writer, response, connection=None):
     body, status, content_type, headers = response
+    # ok... here we unpack
+    # because namedtuple is not mutable...
+    # so... maybe use a dataclass you dumb dumb?
+    if not isinstance(body, bytes):
+        body = body.encode("utf-8")
     header_buffer = [
         f"HTTP/1.1 {status.value} {status.phrase}",
         f"Content-Length: {len(body)}",
     ]
     if content_type:
         header_buffer += [f"Content-Type: {content_type}"]
+    if connection:
+        header_buffer += [f"Connection: {connection}"]
     for header in headers:
         header_buffer += [f"{header}"]
     header = "\r\n".join(header_buffer)
     header += "\r\n\r\n"
+    header = header.encode("utf-8")
 
-    # ... if we talk performance, just put uvloop bro
-    # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    if not isinstance(body, bytes):
-        body = body.encode("utf-8")
-
-    writer.write(header.encode("utf-8") + body)
+    writer.write(header + body)
     await writer.drain()
+
+
+async def _send_server_error(writer):
+    await _send_full(
+        writer,
+        Response("Server Error", HTTPStatus.INTERNAL_SERVER_ERROR, "text/plain", []),
+        connection="close",
+    )
 
 
 async def _send_sse_headers(writer):
@@ -278,7 +286,8 @@ async def _send_sse_headers(writer):
         "HTTP/1.1 200 OK",
         "Content-Type: text/event-stream",
         "Cache-Control: no-cache",
-        "Connection: keep-alive",
+        # "Connection: keep-alive", I have to check with the discord on that one
+        "Connection: close",
     ]
 
     header = "\r\n".join(header_buffer)
@@ -309,6 +318,60 @@ def _find_handler(method, path):
     return None, {}
 
 
+# 3 little helpers before te real work begins
+
+
+def _serve_static(request):
+    candidate = _STATIC_DIR / request.path.removeprefix("/static/")
+    candidate = candidate.resolve()
+
+    if not (candidate.is_relative_to(_STATIC_DIR) and candidate.is_file()):
+        return Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", [])
+
+    stat = candidate.stat()
+    etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
+
+    if request.headers.get("if-none-match") == etag:
+        return Response("", HTTPStatus.NOT_MODIFIED, None, [f"ETag: {etag}"])
+
+    mime, _ = mimetypes.guess_type(candidate.name)
+    # Fallback MIME types, maybe i'm missing some
+    mime = mime or {
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+    }.get(candidate.suffix.lower(), "application/octet-stream")
+
+    body = candidate.read_bytes()
+    return Response(body, HTTPStatus.OK, mime, [f"ETag: {etag}"])
+
+
+def _should_keep_alive(request):
+    connection = request.headers.get("connection", "").lower()
+    if connection == "close":
+        return False
+    if connection == "keep-alive":
+        return True
+    # No explicit header: HTTP/1.1 defaults to keep-alive, HTTP/1.0 to close.
+    return request.version == "HTTP/1.1"
+
+
+async def _stream_sse(writer, gen):
+    try:
+        async with aclosing(gen) as stream:
+            await _send_sse_headers(writer)
+            async for event in stream:
+                await _send_sse_event(writer, event)
+    except (
+        asyncio.CancelledError,
+        BrokenPipeError,
+        ConnectionResetError,
+        ConnectionAbortedError,
+    ):
+        pass
+
+
 async def _handle(reader, writer):
     # this is a callback after the connection has been initialized
     # reader is a StreamReader object,
@@ -317,104 +380,62 @@ async def _handle(reader, writer):
     # we read from the stream, parse it into a "request"
     # find its "route" and write stuff. done.
 
+    keep_alive = True
+    requests_served = 0
+
     try:
-        request = await _read_request(reader)
-        if request is None:
-            await _send_full(
-                writer,
-                Response("Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []),
-            )
-            return
-
-        if request.method == "GET" and request.path.startswith("/static/"):
-            candidate = _STATIC_DIR / request.path.removeprefix("/static/")
-            candidate = candidate.resolve()
-
-            if candidate.is_relative_to(_STATIC_DIR) and candidate.is_file():
-                stat = candidate.stat()
-                etag = f'"{hex(int(stat.st_mtime * 1000))[2:]}{hex(stat.st_size)[2:]}"'
-
-                if request.headers.get("if-none-match") == etag:
-                    await _send_full(
-                        writer,
-                        Response("", HTTPStatus.NOT_MODIFIED, None, [f"ETag: {etag}"]),
-                    )
-                else:
-                    mime, _ = mimetypes.guess_type(candidate.name)
-                    # Fallback MIME types, maybe i'm missing some
-                    mime = mime or {
-                        '.css': 'text/css',
-                        '.js': 'application/javascript',
-                        '.svg': 'image/svg+xml',
-                        '.png': 'image/png',
-                    }.get(candidate.suffix.lower(), 'application/octet-stream')
-
-                    body = candidate.read_bytes()
-                    await _send_full(
-                        writer,
-                        Response(body, HTTPStatus.OK, mime, [f"ETag: {etag}"]),
-                    )
-                return
-            else:
+        while keep_alive:
+            timeout = REQUEST_TIMEOUT if requests_served == 0 else KEEPALIVE_TIMEOUT
+            request = await _read_request(reader, timeout)
+            if request is None:
                 await _send_full(
                     writer,
-                    Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+                    Response("Bad Request", HTTPStatus.BAD_REQUEST, "text/plain", []),
+                    connection="close",
                 )
                 return
 
-        handler, params = _find_handler(request.method, request.path)
-        request.params = params
-
-        for fn in _before_request:
-            early_response = fn(request)
-            if early_response is not None:
-                await _send_full(writer, early_response)
-                return
-
-        if handler is None:
-            await _send_full(
-                writer,
-                Response("Not Found", HTTPStatus.NOT_FOUND, "text/plain", []),
+            keep_alive = (
+                _should_keep_alive(request)
+                and requests_served < MAX_REQUESTS_PER_CONNECTION
             )
-            return
+            connection = "keep-alive" if keep_alive else "close"
 
-        response = handler(request)
+            if request.method == "GET" and request.path.startswith("/static/"):
+                response = _serve_static(request)
+            else:
+                handler, params = _find_handler(request.method, request.path)
+                request.params = params
 
-        if inspect.isasyncgen(response):  # sse patch
-            try:
-                async with aclosing(response) as gen:
-                    await _send_sse_headers(writer)
-                    for fn in _after_event:
-                        event = await fn(request, event)
-                    async for event in gen:
-                        await _send_sse_event(writer, event)
-            except (
-                asyncio.CancelledError,
-                BrokenPipeError,
-                ConnectionResetError,
-                ConnectionAbortedError,
-            ):
-                pass
-        else:
-            response = await response
-            for fn in _after_response:
-                modified_response = fn(request, response)
-                if modified_response is not None:
-                    response = modified_response
-            await _send_full(writer, response)
+                response = None
+                for fn in _before_request:
+                    response = fn(request)
+                    if response is not None:
+                        break
+
+                if response is None:
+                    if handler is None:
+                        response = (
+                            Response(
+                                "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
+                            ),
+                        )
+                    else:
+                        response = handler(request)
+
+                        if inspect.isasyncgen(response):  # sse patch
+                            await _stream_sse(writer, response)
+                            return  # if i do indeed close
+
+                        else:
+                            response = await response
+
+            await _send_full(writer, response, connection=connection)
+            requests_served += 1
 
     except Exception as e:
-        logger.error(f"Error in handling request: {e}")
-        traceback.print_exc()
-        await _send_full(
-            writer,
-            Response(
-                "Server Error",
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-                "text/plain",
-                [],
-            ),
-        )
+        logger.exception("Error handling request.")
+        await _send_server_error(writer)
 
     finally:
         writer.close()
@@ -451,7 +472,7 @@ async def _serve(host, port, sock):
     async with server:
         try:
             await server.serve_forever()
-        except asyncio.CancelledError: # expected on shutdown
+        except asyncio.CancelledError:  # expected on shutdown
             pass
 
 
@@ -530,3 +551,7 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
             asyncio.run(_serve(host, port, sock))
     except KeyboardInterrupt:
         logger.info("Server shutdown.")
+
+
+# ... if we talk performance, just put uvloop bro
+# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
