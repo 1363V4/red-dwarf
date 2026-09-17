@@ -1,5 +1,5 @@
 from .server import (
-    after_response,
+    # after_response,
     before_request,
     delete,
     empty,
@@ -16,7 +16,7 @@ __version__ = "0.1.0"
 
 __all__ = (
     "__version__",
-    "after_response",
+    # "after_response",
     "before_request",
     "delete",
     "empty",

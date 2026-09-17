@@ -24,7 +24,6 @@
 
 ul[indented] {
     margin-left: var(--m);
-    list-style: square;
 }
 
 #title {
