@@ -1,0 +1,127 @@
+<main>
+    <h1>Genie in a Bottle</h1>
+    <p>
+        Imagine you work very hard on something just to discover it has already
+        been done, except way better. Haha. Just imagine. Hum...
+    </p>
+    <p>
+        So... it appears I have just reinvented
+        <a href="https://bottlepy.org/">Bottle</a>, but worse.
+    </p>
+    <p>
+        To my defense, it's more like "I had no idea Bottle had streaming
+        capabilities", but then
+        <a href="https://github.com/ahmedlemine">ahmedlemine</a>
+        just came and made a Datastar <-> Bottle adapter. What a Chad.
+    </p>
+    <p>
+        However, I won't go down without a fight, so let's explore the
+        differences between Bottle and Red Dwarf.
+    </p>
+    <h2>What Bottle does better</h2>
+    <p>
+        A lot of things obviously. Bottle is way more advanced and handles stuf
+        like file uploads, has a test framework and a cool error page...
+    </p>
+    <p>
+        The Bottle code is very pleasant to read. Cool docstrings while not
+        being overly typed.
+    </p>
+    <p>
+        Speaking of typing, they do typed dynamic routes (stuff like
+        <code>doc_id:int</code> on the routes).
+    </p>
+    <p>
+        Overall, Bottle tries to be very close to the spec (with a careful
+        consideration of possible response types, correct handling of trailing
+        slashes in URLs...) while maintaining broad options (for example, it
+        will handle different encodings, whereas Red Dwarf will tell you to
+        scram if you don't use <code>utf-8</code>).
+    </p>
+    <p>
+        They also use a lot of cached <code>@property</code> to skip unecessary
+        computing or raise informative errors. I don't use them because I find
+        them unwieldy (just give me the damn dict) but Adam from
+        <a href="https://stario.dev/">Stario</a>
+        said it's a good thing so I'm putting it in the bonus points.
+    </p>
+    <p>
+        The oddity of Bottle is putting everything in <code>environ</code> for
+        reasons I don't understand. Is it to have a correct behavior in a
+        multithreaded environment as the use of
+        <code>threading.local()</code> suggests? Is it for spec compliance, or
+        code readability? I can't tell.
+    </p>
+    <p>Oh, and they do middlewares.</p>
+    <h2>What Red Dwarf does different</h2>
+    <p>
+        The obvious one: everything in Red Dwarf is async. That was one of the
+        main motivations, because async behavior plays nicely with Datastar.
+    </p>
+    <p>
+        Turns out Bottle can do streaming generators just fine, and even get to
+        async behaviors using <code>gevent</code> (like Flask). This nonetheless
+        leads to different code.
+    </p>
+    <p>
+        Another big one: capabilities. Red Dwarf doesn't implement a lot of
+        stuff (like JSON responses, after_response hooks...) because it assumes
+        Datastar and "YAGNI". That's by design.
+    </p>
+    <p>
+        For the same reason, Red Dwarf doesn't do "no return value from handler
+        -> empty response" because I want <code>empty()</code> to be explicitly
+        written as a better teaching tool.
+    </p>
+    <p>
+        While I like Bottle's templating engine, Red Dwarf doesn't ship with
+        one, as 1. This is still an open problem and 2. People like Jinja (not
+        me, I prefer Stario's way).
+    </p>
+    <p>
+        Other small stuff: I don't do static mounting (can't understand the
+        appeal, protect from path traversal maybe?) and I use secure cookies by
+        default instead of the spec behavior.
+    </p>
+    <p>
+        And I don't do CLI arguments. Who does that? You write an app, call it
+        there.
+    </p>
+    <h2>Where we agree</h2>
+    <p>
+        We very much align in philosophy: no dependencies for example, that's
+        always sexy.
+    </p>
+    <p>
+        We also agree to defer as much stuff as possible: defer the compression
+        to the reverse proxy, defer the session handling (they recommend
+        <a href="https://beaker.readthedocs.io/en/latest/">beaker</a>, which I
+        didn't know about, but some people might prefer a row in a SQLite
+        database for example), and most importantly, defer glue code to the user
+        (teach these "Claudependents" a lesson).
+    </p>
+    <h2>Bottom line</h2>
+    <p>
+        Bottle is very small for what it does: only 5k lines of commented code.
+    </p>
+    <p>
+        I'll be honest: it was a bit of a bummer. Had I found it beforehand, I
+        never would have committed to writing Red Dwarf.
+    </p>
+    <p>But in the end, it's a good thing:</p>
+    <ul indented>
+        <ol>
+            Reading their code allowed me to fix some bugs in mine.
+        </ol>
+        <ol>
+            It forced me to define a more precise goal: I want Red Dwarf to be
+            reference
+            <strong>tutorial</strong>
+            for Datastar + Python. Not the fastest micro framework, not the most
+            complete, not the smallest in terms of lines of code, but the
+            smallest
+            <strong>in terms of documentation.</strong>
+        </ol>
+    </ul>
+    <p>So... cheers to Bottle!</p>
+</main>

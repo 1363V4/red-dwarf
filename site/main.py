@@ -2,25 +2,26 @@
 
 # import other_site ... i'll do that for examples page
 import json
+import logging
 from pathlib import Path
 from time import asctime
-import logging
 
-import red_dwarf as rd
 from pages import (
-    PAGE_INDEX,
-    PAGE_ESSAYS,
-    PAGE_EXAMPLES,
-    PAGE_FAQ,
-    PAGE_RED,
-    PAGE_GETTING_STARTED,
-    PAGE_DOCS,
-    ESSAY_V0,
+    ESSAY_BOTTLE,
     ESSAY_DATASTAR,
     ESSAY_PYTHON,
     ESSAY_REAL,
-    )
+    ESSAY_V0,
+    PAGE_DOCS,
+    PAGE_ESSAYS,
+    PAGE_EXAMPLES,
+    PAGE_FAQ,
+    PAGE_GETTING_STARTED,
+    PAGE_INDEX,
+    PAGE_RED,
+)
 
+import red_dwarf as rd
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
@@ -45,6 +46,7 @@ with open(_DB_PATH) as db:
 #     print(response)
 #     return response
 
+
 @rd.get("/")
 async def index(request):
     logger.info("Hello there")
@@ -60,17 +62,21 @@ async def docs(request):
 async def red(request):
     return rd.html(PAGE_RED)
 
+
 @rd.get("/faq")
 async def faq(request):
     return rd.html(PAGE_FAQ)
+
 
 @rd.get("/getting_started")
 async def start(request):
     return rd.html(PAGE_GETTING_STARTED)
 
+
 @rd.get("/examples")
 async def examples(request):
     return rd.html(PAGE_EXAMPLES)
+
 
 @rd.get("/essays")
 async def essays(request):
@@ -90,8 +96,10 @@ async def time(request):
     database["asks"] += 1
     with open(_DB_PATH, "w") as db:
         json.dump(database, db)
-    yield rd.patch(f'<div id=time>Hi! I am a 3$ server in Germany and now is {time}</div>')
-    yield rd.patch(f'<div id=brag>I\'ve been asked {database["asks"]} times</div>')
+    yield rd.patch(
+        f"<div id=time>Hi! I am a 3$ server in Germany and now is {time}</div>"
+    )
+    yield rd.patch(f"<div id=brag>I've been asked {database['asks']} times</div>")
 
 
 # @rd.get("/docs/<folder_id>/<document_id>")
@@ -114,21 +122,24 @@ async def time(request):
 #     # {'theme': 'light'}
 #     return rd.html("ok")
 
+
 @rd.get("/essays/<essay>")
 async def essay_page(request):
     # request should be req
     d_essay = {
-        'v0.html': ESSAY_V0,
-        'datastar.html': ESSAY_DATASTAR,
-        'python.html': ESSAY_PYTHON,
-        'real.html': ESSAY_REAL,
+        "v0.html": ESSAY_V0,
+        "datastar.html": ESSAY_DATASTAR,
+        "python.html": ESSAY_PYTHON,
+        "real.html": ESSAY_REAL,
+        "bottle.html": ESSAY_BOTTLE,
     }
-    essay = request.params.get('essay')
+    essay = request.params.get("essay")
     page = d_essay.get(essay)
     if page:
         return rd.html(page)
     else:
         return rd.redirect("/")
+
 
 # @rd.get("/sse_stream")
 # async def sse_stream(request):

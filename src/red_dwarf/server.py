@@ -39,6 +39,7 @@ class Request:
     method: str
     raw_path: str
     path: str
+    version: str
     query: dict
     headers: dict
     body: bytes
@@ -153,10 +154,12 @@ async def _read_request(reader, timeout):
                 return None
 
             parts = line.decode("utf-8", errors="replace").split()
+            # maybe use surrogateescape instead?
             if len(parts) < 2:
                 return None
 
             method, raw_path = parts[0], parts[1]
+            version = parts[2] if len(parts) > 2 else "HTTP/1.0"
             logger.info(f"{method} request on {escape(raw_path)}")  # telemetry ftw
 
             split = urlsplit(raw_path)
@@ -206,7 +209,9 @@ async def _read_request(reader, timeout):
     except TimeoutError:
         return None
 
-    return Request(method, raw_path, path, query, headers, body, signals, cookies)
+    return Request(
+        method, raw_path, path, version, query, headers, body, signals, cookies
+    )
 
 
 # USER RESPONSES
@@ -415,10 +420,8 @@ async def _handle(reader, writer):
 
                 if response is None:
                     if handler is None:
-                        response = (
-                            Response(
-                                "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
-                            ),
+                        response = Response(
+                            "Not Found", HTTPStatus.NOT_FOUND, "text/plain", []
                         )
                     else:
                         response = handler(request)
