@@ -134,6 +134,7 @@ header {
     #topline {
         display: grid;
         grid-template-columns: 32px 1fr 32px;
+        align-items: start;
         img {
             width: 32px;
             cursor: pointer;
@@ -142,7 +143,7 @@ header {
 
     #side_panel {
         li {
-            line-height: var(--xs);
+            line-height: var(--s);
             width: fit-content;
             place-self: center;
         }
@@ -154,7 +155,10 @@ header {
 
 main {
     padding-inline: var(--l);
+    max-width: 1024px;
+    place-self: center;
 }
+
 main {
     *:not(".gmb") {
         margin-bottom: var(--s);
@@ -200,7 +204,6 @@ code {
 
 details {
     margin-block: var(--s);
-    text-align: center;
     color: var(--blue);
     summary {
         cursor: pointer;

@@ -153,7 +153,7 @@ async def essay_page(request):
 #         print("cleanup")
 
 if __name__ == "__main__":
-    rd.run(reload=True)
-    # rd.run(sock="/run/legovh/rd.sock")
+    # rd.run(reload=True)
+    rd.run(sock="/run/legovh/rd.sock")
 
 # viande out

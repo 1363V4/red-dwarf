@@ -5,7 +5,18 @@
                 <img src="/static/img/logo_31.png" />
             </a>
         </div>
-        <div></div>
+        <div data-show="!$open"></div>
+        <!-- it's a filler div -->
+	    <nav id="side_panel" data-attr:opened="$open">
+	        <ul>
+	            <li><a href="/getting_started">Getting Started</a></li>
+	            <li><a href="/docs">Docs</a></li>
+	            <li><a href="/examples">Examples</a></li>
+	            <li><a href="/essays">Essays</a></li>
+	            <li><a href="/faq">FAQ</a></li>
+	            <li><a target="_blank" href="https://github.com/1363V4/red-dwarf">Github</a></li>
+	        </ul>
+	    </nav>
         <div
             id="burger"
             class="gc ioda"
@@ -17,14 +28,4 @@
             />
         </div>
     </div>
-    <nav id="side_panel" data-attr:opened="$open">
-        <ul>
-            <li><a href="/getting_started">Getting Started</a></li>
-            <li><a href="/docs">Docs</a></li>
-            <li><a href="/examples">Examples</a></li>
-            <li><a href="/essays">Essays</a></li>
-            <li><a href="/faq">FAQ</a></li>
-            <li><a target="_blank" href="https://github.com/1363V4/red-dwarf">Github</a></li>
-        </ul>
-    </nav>
 </header>
