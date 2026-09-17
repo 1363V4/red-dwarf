@@ -43,8 +43,8 @@
     }
     menu,
     ol,
-    ul {
-    	display: list-item;
+    li {
+        display: list-item;
         list-style: auto;
     }
     hr {

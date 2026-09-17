@@ -21,6 +21,20 @@
     font-display: swap;
     src: url("/static/fonts/Silkscreen-Regular.ttf") format("woff2");
 }
+@font-face {
+    font-family: "redres";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/static/fonts/Redressed-Regular.ttf") format("woff2");
+}
+@font-face {
+    font-family: "redtxt";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/static/fonts/RedHatText-Regular.ttf") format("woff2");
+}
 
 :root {
     --m: 31px;
@@ -36,12 +50,12 @@
     :root {
         --white: #070204de;
         --black: #ffffff80;
-	    --strong: #000;
+        --strong: #000;
     }
-	.ioda {
-		filter: invert(1)
-	}
-  }
+    .ioda {
+        filter: invert(1);
+    }
+}
 
 @media (width < 567px) {
     :root {
@@ -56,7 +70,7 @@ html {
     line-height: var(--l); */
     font-size: var(--s);
     line-height: var(--m);
-    font-family: "redros", system-ui;
+    font-family: "redtxt", system-ui;
 }
 
 body {
@@ -65,7 +79,8 @@ body {
     grid-template-rows: auto 1fr auto;
 }
 
-h1, h2 {
+h1,
+h2 {
     font-family: "slkscr";
     font-weight: bold;
     padding-inline: var(--s);
@@ -79,7 +94,6 @@ h1 {
 }
 
 h2 {
-    font-family: "slkscr";
     margin-block: var(--s);
     background-color: var(--white);
 }
@@ -97,6 +111,10 @@ hr {
     color: var(--blue);
     max-width: 567px;
     place-self: center;
+}
+
+li {
+    list-style: none;
 }
 
 header {
@@ -154,6 +172,7 @@ main {
 }
 
 footer {
+    font-family: "redres";
     margin-top: var(--m);
     width: 100%;
     color: var(--black);
@@ -169,14 +188,14 @@ footer {
 }
 
 pre {
-	/* max-width: 80dvi; */
+    /* max-width: 80dvi; */
 }
 
 code {
     font-family: monospace;
     /* font-family: redhat; */
-	font-size: inherit;
-	overflow-wrap: anywhere;
+    font-size: inherit;
+    overflow-wrap: anywhere;
 }
 
 details {
@@ -191,7 +210,6 @@ details {
 }
 
 quote {
-
 }
 
 li {
