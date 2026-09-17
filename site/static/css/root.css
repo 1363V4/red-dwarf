@@ -1,4 +1,4 @@
-/* root.css is for native html elements and site-wide configuration */
+<65;93;19M<65;93;19M<64;87;11M/* root.css is for native html elements and site-wide configuration */
 
 @font-face {
     font-family: "redhat";
@@ -26,6 +26,7 @@
     --m: 31px;
     --black: #070204;
     --white: #ffffff9e;
+    --strong: #fff;
     --red: #f33535;
     --blue: #2936f2;
     --code: #5036ff;
@@ -33,9 +34,13 @@
 
 @media (prefers-color-scheme: light) {
     :root {
-        --white: #070204;
+        --white: #070204de;
         --black: #ffffff80;
+	    --strong: #000;
     }
+	.ioda {
+		filter: invert(1)
+	}
   }
 
 @media (width < 567px) {
@@ -81,11 +86,11 @@ h2 {
 
 strong {
     font-weight: normal;
-    color: white;
+    color: var(--strong);
 }
 
 img {
-    mix-blend-mode: lighten;
+    /* mix-blend-mode: lighten; */
 }
 
 hr {
@@ -163,9 +168,15 @@ footer {
     }
 }
 
+pre {
+	/* max-width: 80dvi; */
+}
+
 code {
-    font-family: redhat;
+    font-family: monospace;
+    /* font-family: redhat; */
 	font-size: inherit;
+	overflow-wrap: anywhere;
 }
 
 details {
@@ -177,6 +188,10 @@ details {
         color: var(--white);
         margin-block: var(--s);
     }
+}
+
+quote {
+
 }
 
 li {

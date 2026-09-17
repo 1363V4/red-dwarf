@@ -8,17 +8,17 @@ import logging
 
 import red_dwarf as rd
 from pages import (
-    PAGE_INDEX, 
+    PAGE_INDEX,
     PAGE_ESSAYS,
     PAGE_EXAMPLES,
     PAGE_FAQ,
     PAGE_RED,
     PAGE_GETTING_STARTED,
     PAGE_DOCS,
-    ESSAY_V0, 
-    ESSAY_DATASTAR, 
-    ESSAY_PYTHON, 
-    ESSAY_REAL, 
+    ESSAY_V0,
+    ESSAY_DATASTAR,
+    ESSAY_PYTHON,
+    ESSAY_REAL,
     )
 
 
@@ -90,7 +90,7 @@ async def time(request):
     database["asks"] += 1
     with open(_DB_PATH, "w") as db:
         json.dump(database, db)
-    yield rd.patch(f'<div id=time>{time}</div>')
+    yield rd.patch(f'<div id=time>Hi! I am a 3$ server in Germany and now is {time}</div>')
     yield rd.patch(f'<div id=brag>I\'ve been asked {database["asks"]} times</div>')
 
 
@@ -142,8 +142,7 @@ async def essay_page(request):
 #         print("cleanup")
 
 if __name__ == "__main__":
-    rd.run(reload=True)
-    # app.run(sock="/tmp/grug.sock")
-    # rd.run(sock="/run/legovh/rd.sock", reload=True)
+    # rd.run(reload=True)
+    rd.run(sock="/run/legovh/rd.sock")
 
 # viande out

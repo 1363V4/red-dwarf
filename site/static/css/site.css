@@ -45,7 +45,7 @@ ul[indented] {
 
 #tagline small {
     font-style: italic;
-    color: white;
+    color: var(--strong);
     text-shadow: -1px 1px 5px var(--red);
 }
 
