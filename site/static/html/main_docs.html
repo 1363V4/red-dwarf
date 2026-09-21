@@ -6,19 +6,13 @@
             <p><a href="#requests">Requests</a></p>
             <p><a href="#responses">Responses</a></p>
             <p><a href="#app">App</a></p>
-            <p><a href="#lifecycle">Lifecycle</a></p>
+            <!--<p><a href="#lifecycle">Lifecycle</a></p>-->
         </nav>
     </div>
     <h1>Reference</h1>
     <h2 id="routes">Routes</h2>
-    <p>
-        Define routes by writing an async function and slapping a
-        decorator on top of it.
-    </p>
-    <p>
-        You can use the 4 standards HTTP methods: GET, POST, PUT and
-        DELETE.
-    </p>
+    <p>A route is code you run when a user requests an URL.</p>
+    <p>Define routes with an async function + a decorator.</p>
     <pre class="language-python">
     <code>
 @rd.get("/users")
@@ -27,134 +21,188 @@ async def get_users(request):
 
 @rd.post("/new_user")
 async def new_user(request):
-    return rd.html(...)
-
-@rd.put("/rename_user")
-async def rename_user(request):
-    return rd.html(...)
-
-@rd.delete("/remove_user")
-async def remove_user(request):
     return rd.html(...)</code>
     </pre>
-    <p class="gmb">
-        You can also use parameters in your routes and get back these
-        values in your handler.
-    </p>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Other methods</summary>
+        PUT - <code>@rd.put()</code> - for
+        idempotent modifications<br>
+        DELETE - <code>@rd.delete()</code> - for
+        deletions
+    </details>
     <h2 id="requests">Requests</h2>
-    <p>Request is the only stateful object in Red Dwarf.</p>
+    <p>User requests can contain useful information.</p>
+    <p class="gmb">There are two ways to retrieve them:</p>
+    <u>Method 1: The information is in the URL</u>
     <p>
-        When Red Dwarf receives a request, it parses it for you into a
-        Request object that you can freely access.
+        For example, the user wants page 67 of book 42. Make them click on a
+        link like this: <code>"www.site.com/books/42?page=67"</code>
+        and retrieve this data like this:
     </p>
-    <p>Note: All the attributes are strings or dicts.</p>
+    <pre class="language-python gmb">
+    <code>
+@rd.get("/books/&lt;book_id&gt;")
+async def serve_book(request):
+    print(request.params)
+    # {'book_id': '42'}
+    print(request.query)
+    # {'page': ['67']}
+    </code></pre>
+    <u>Method 2: The information is in the Request</u>
+    <p>
+        This happens either when you stored the information beforehand with
+        cookies, or when you used Datastar's <code>data-bind</code> method to
+        link a value with an input.
+    </p>
     <pre class="language-python">
     <code>
-@rd.get("/docs/&lt;folder_id&gt;/&lt;document_id&gt;")
-async def serve_document(request):
-    print(request.method)
-    # 'GET'
-    print(request.raw_path)
-    # '/docs/folder18/document4?page=42'
-    print(request.path)
-    # '/docs/folder18/document4'
-    print(request.params)
-    # {'folder_id': 'folder18', 'document_id': 'document4'}
-    print(request.query)
-    # {'page': ['42']}
-    print(request.headers)
-    # {'host': '...', ...}
-    print(request.body)
-    # b''
+@rd.post("/submit_form")
+async def process_form(request):
     print(request.cookies)
-    # {'user_id': ...}
+    # {'session_id': ...}
     print(request.signals)
-    # {'theme': 'light'}
-    return rd.html(...)</code>
+    # {'username': 'red'}</code>
     </pre>
-    <p class="gmb">As you see, Datastar signals are automatically parsed.</p>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Other data stored in request</summary>
+        Here is the rest of the data stored in request:
+        <ul indented>
+            <li><code>request.method</code>: "GET", ...</li>
+            <li><code>request.raw_path</code>: "/books/42?page=67"</li>
+            <li><code>request.path</code>: "/books/42"</li>
+            <li><code>request.headers</code>: {'host': "...", ...}</li>
+            <li><code>request.body</code>: b"..."</li>
+        </ul>
+    </details>
     <h2 id="responses">Responses</h2>
-    <p>In Red Dwarf, there are only 4 possible responses.</p>
-    <p>Most of the time, you'll answer with <code>rd.html()</code>.</p>
+    <p class="gmb">
+        The way you respond to a user's request depends on the type of the request.
+    </p>
+    <u>Case 1: Normal request</code></u>
+    <p>
+        <i>(For example, when a user access a URL from the status bar, or after clicking on a link.)</i>
+    </p>
+    <p>Simply use <code>rd.html()</code>:</p>
     <pre class="language-python">
     <code>
 @rd.get("/")
 async def home(request):
-    return rd.html(&lt;h1&gt;Hello World!&lt;/h1&gt;)
-
-@rd.get("/red")
-async def red(request):
+    return rd.html(&lt;h1&gt;Hello World!&lt;/h1&gt;)</code>
+    </pre>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Setting cookies and headers</summary>
+        You can pass a list of headers or a dict of cookies as additional
+        parameters.
+        <pre class="language-python">
+        <code>
+@rd.get("/")
+async def home(request):
     headers = ["X-Accel-Buffering: No"]
-    user_id = "123"
+    cookies = {'user_id': "123"}
     return rd.html(
     &lt;h1&gt;Hello World!&lt;/h1&gt;
     headers=headers,
-    cookies={'user_id': user_id}
+    cookies=cookies
     )</code>
     </pre>
+    </details>
+    <u>Case 2: Datastar request</u>
     <p>
-        You can also use <code>rd.empty()</code> to return an empty
-        response (useful in CQRS patterns).
+        If the request was triggered by a
+        <a href="https://data-star.dev/reference/actions">Datastar action</a>,
+        you can modify an element on the page.
     </p>
     <pre class="language-python">
     <code>
+@rd.get("/update")
+async def update(request):
+    return rd.html("&lt;main&gt;...&lt;/main&gt;")</code>
+    </pre>
+    <details advanced>
+        <summary><b>Advanced:</b> Patching multiple elements</summary>
+        You can patch multiple elements using <code>rd.patch()</code>.<br>
+        Note that you have to <code>yield</code> the values.
+        <pre class="language-python">
+        <code>
+@rd.get("/process")
+async def process_user_request(request):
+    yield rd.patch("&lt;main&gt;Processing...&lt;/main&gt;")
+    result = compute_stuff()
+    yield rd.patch(f"&lt;main&gt;Result is {result}&lt;/main&gt;")</code>
+        </pre>
+    </details>
+	<details advanced>
+		<summary><b>Advanced:</b> Empty responses (CQRS pattern)</summary>
+		A very useful pattern in Datastar
+		is to have one long-lived response
+		with other "command" endpoints.<br>
+		The long-lived response will <code>yield</code>
+		through a pubsub-activated generator
+		and the command endpoints will return empty responses.
+        </pre>
+        <pre class="language-python">
+        <code>
+@rd.get("/read")
+async def read_stream(request):
+    async for message in pubsub.listen():
+        yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
+    </pre>
+        <pre class="language-python">
+        <code>
 @rd.post("/command")
 async def handle_command(request):
     user_id = request.cookies.get("user_id")
-    if user_id:
-        database.process(user_id)
+    value = process(user_id)
+    pubsub.send(value)
     return rd.empty()</code>
-    </pre>
-    <p>
-        Finally, you can use <code>rd.patch()</code> to any Datastar
-        request.
-    </p>
-    <pre class="language-python">
-    <code>
-@rd.get("/sse")
-async def sse_stream(request):
-    async for message in pubsub_channel():
-        yield rd.patch(f"&lt;div id=&#x27;message&#x27;&gt;{message}&lt;/div&gt;")</code>
-    </pre>
-    <p>
-        The HTML in <code>rd.patch()</code> will replace the one on the
-        page. Magic!
-    </p>
-    <p class="gmb">
-        Occasionally, you may redirect users if resources moved:
-    </p>
-    <pre class="language-python">
-    <code>
+	</details>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Redirection</summary>
+        <p>You may redirect users if resources moved with <code>rd.redirect()</code>:</p>
+        <pre class="language-python">
+        <code>
 @rd.get("/v1")
 async def old_version(request):
     return rd.redirect("/v2")</code>
-    </pre>
+        </pre>
+    </details>
     <h2 id="app">App</h2>
-    <p>That's all!</p>
-    <p>You now know how to use Red Dwarf.</p>
+    <p>That's all! You now know how to use Red Dwarf.</p>
     <p>The last thing you need to do is launch your app</p>
     <pre class="language-python">
     <code>
 if __name__ == "__main__":
-    rd.run(reload=True)</code>
+    rd.run()</code>
     </pre>
-    <p>You're good to go!</p>
-    <p>By default, Red Dwarf will serve on localhost.</p>
-    <p>
-        You can also specify a custom host adress, or use a Unix port if
-        you prefer.
-    </p>
-    <p>
-        Note: During development, you can use <code>reload=True</code>.
-        It will detect any change in Python files or in your static
-        folder, and will relaunch the server.
-    </p>
-    <pre class="language-python gmb">
-    <code>
+    <details advanced>
+        <summary><b>Advanced:</b> Reload mode</summary>
+        You can use <code>reload=True</code>. It will
+        detect any change in your Python files or in your static folder, and will
+        relaunch the server.<br>
+        Useful for prototyping, don't use it in production.
+        <pre class="language-python">
+        <code>
 if __name__ == "__main__":
-    rd.run(sock="/unix.sock", reload=True)</code>
-    </pre>
-    <h2 id="lifecycle">Lifecycle</h2>
+    rd.run(reload=True)</code>
+        </pre>
+    </details>
+    <details advanced>
+        <summary><b>Advanced:</b> Serving on a different port</summary>
+        <pre class="language-python">
+        <code>
+if __name__ == "__main__":
+    rd.run(port="123.4.5.6:7890")</code>
+        </pre>
+    </details>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Serving on a Unix socket</summary>
+        <pre class="language-python">
+        <code>
+if __name__ == "__main__":
+    rd.run(sock="/unix.sock")</code>
+        </pre>
+    </details>
+    <!--<h2 id="lifecycle">Lifecycle</h2>
     <p>
         Red Dwarf gives you useful <code>before_request</code> /
         <code>after_response</code> decorators.
@@ -171,13 +219,13 @@ if not request.get("user_id"):
 @rd.after_response
 def log(request):
     logger.info(f"Another successful response on {request.path}!")</code>
-    </pre>
+    </pre>-->
     <h2>Off you go!</h2>
+    <p>Go build something cool!</p>
     <p>
-        You can continue by
-        studying the <a href="/examples">Examples</a>,
-        checking the <a href="/faq">FAQ</a>,
-        or reading the <a href="/essays">Essays</a>.
+        You can continue by studying the <a href="/examples">Examples</a>,
+        checking the <a href="/faq">FAQ</a>, or reading the
+        <a href="/essays">Essays</a>.
     </p>
     <p><strong>Have fun!</strong></p>
 </main>

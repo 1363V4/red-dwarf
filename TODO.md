@@ -1,5 +1,8 @@
 # TODO
 
+DETAILS
+STARCORD
+
 - faut savoir si je veux async partout.
 - after event??? ON AIME???
 - merde, je peux pas modifier réponse. j'autorise ou pas ?
@@ -17,7 +20,7 @@
 - package: uv add red_dwarf
 
 - manque les titres des pages
-bon ça pas trop possible avec mon setup de shlag
+  bon ça pas trop possible avec mon setup de shlag
 
 FUCK
 small est plus small
@@ -33,6 +36,7 @@ PEOPLE ON THE SITE
 possible bug si y'a pas de static folder?
 
 DOC
+
 - getting started
 - reference
 - examples
@@ -75,7 +79,6 @@ Really Efficient Design
 starlette ou litestar quand on aura fini de rigoler ?
 litestar non
 on a un bench ici (fortune cookie): https://www.techempower.com/benchmarks/#hw=ph&test=fortune&l=zijzen-sf&section=data-r23
-
 
 ---
 

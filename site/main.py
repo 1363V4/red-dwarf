@@ -141,6 +141,13 @@ async def essay_page(request):
         return rd.redirect("/")
 
 
+@rd.get("/test")
+async def test(request):
+    # yield rd.patch("<div id='bibi'>ok</div>")
+    # yield rd.patch("<div id='bibi'>nok</div>")
+    return rd.html("<div id='bibi'>nok</div>")
+
+
 # @rd.get("/sse_stream")
 # async def sse_stream(request):
 #     try:

@@ -169,7 +169,7 @@ main {
         border-radius: var(--s);
         box-shadow: 0px -5px 3px -2px var(--code);
         h2 {
-            background-color: var(--blue);
+            background-color: var(--code);
             font-weight: normal;
         }
     }
@@ -210,9 +210,15 @@ details {
         color: var(--white);
         margin-block: var(--s);
     }
-}
-
-quote {
+    &[advanced] {
+        border: 1px dashed var(--code);
+        color: var(--white);
+        padding-inline: var(--s);
+        summary {
+            color: var(--code);
+            margin-block: 0;
+        }
+    }
 }
 
 li {
