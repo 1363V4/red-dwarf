@@ -1,6 +1,5 @@
 # TODO
 
-DETAILS
 STARCORD
 
 - faut savoir si je veux async partout.
@@ -16,11 +15,7 @@ STARCORD
 - is it worth checking static first? measure bitch
 
 - thank lea for prism
-- draft a website on legovh
 - package: uv add red_dwarf
-
-- manque les titres des pages
-  bon ça pas trop possible avec mon setup de shlag
 
 FUCK
 small est plus small
@@ -35,23 +30,12 @@ PEOPLE ON THE SITE
 
 possible bug si y'a pas de static folder?
 
-DOC
-
-- getting started
-- reference
-- examples
-- cookbook...?
-- essays
-- faq
-- github
-
-PERFORMANCE: uvloop
-
 # NOTES
 
 red-panda
 like tinydb but with pandas
 load json, write on change
+
 red-poppy
 je sais pas pourquoi mais va falloir
 

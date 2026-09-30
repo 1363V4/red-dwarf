@@ -29,11 +29,15 @@ ul[indented] {
 #title {
     padding-block: 0;
     background: linear-gradient(0deg, var(--code), var(--black));
-    background-clip: text;
+    /* background-clip: text; */
     text-shadow: 0px 0px var(--code);
-    filter: drop-shadow(2px 2px 2px var(--blue));
+    filter: drop-shadow(Opx 2px 20px var(--blue));
     animation: shadow_anim 2s steps(16) infinite;
     line-break: anywhere;
+    transition: color 2s ease-in;
+    &:hover {
+        color: var(--white);
+    }
 }
 
 @keyframes shadow_anim {

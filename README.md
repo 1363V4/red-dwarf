@@ -2,15 +2,15 @@
 
 ![Red Dwarf](site/static/img/logo_124.png)
 
-**Website:** [red.leg.ovh](https://red.leg.ovh) · **Docs:** [/docs](https://red.leg.ovh/docs) · **FAQ:** [/faq](https://red.leg.ovh/faq) · **GitHub:** [1363V4/red-dwarf](https://github.com/1363V4/red-dwarf)
+**Website:** [red.leg.ovh](https://red.leg.ovh) · **Docs:** [/docs](https://red.leg.ovh/docs) · **GitHub:** [1363V4/red-dwarf](https://github.com/1363V4/red-dwarf)
 
 Red Dwarf is a zero-dependency async HTTP/1.1 server for Python, built around [Datastar](https://data-star.dev/). 
 
 ## Why Red Dwarf?
 
-Datastar keeps application state on the backend. But the backend is more than a web server: it is also database, cronjobs, pub/sub, scripts... 
+Datastar supercharges the backend. But the backend is more than a web server!
 
-Red Dwarf does the smallest useful slice: parse HTTP, match routes, return HTML or stream patches. You write the rest of your Python however you like.
+Red Dwarf does the smallest useful slice: parse HTTP, match routes, return HTML or stream patches. You write the rest of your backend (database, cronjobs, pub/sub, scripts...) however you like.
 
 Red Dwarf is a good first step with Datastar. For multiple workers, middleware stacks, or heavy production tooling, look at [Stario](http://stario.dev/), [Sanic](https://sanic.dev/), or [Quart](https://quart.palletsprojects.com/).
 
