@@ -39,7 +39,7 @@
 :root {
     --m: 31px;
     --black: #070204;
-    --white: #ffffff9e;
+    --white: #ffffffd6;
     --strong: #fff;
     --red: #f33535;
     --blue: #2936f2;
@@ -122,7 +122,7 @@ header {
     background-color: var(--black);
     display: grid;
     margin-bottom: var(--m);
-    border-bottom: 3px solid var(--blue);
+    border-bottom: 2px groove var(--blue);
     padding-inline: var(--s);
     height: fit-content;
 
@@ -136,7 +136,7 @@ header {
         grid-template-columns: 32px 1fr 32px;
         align-items: start;
         img {
-            width: 32px;
+            height: 32px;
             cursor: pointer;
         }
     }
