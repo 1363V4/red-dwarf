@@ -1,0 +1,62 @@
+<main>
+    <h1>Leaving uv</h1>
+    <p>
+        For a while, I considered that this project would be
+        <em>done</em> when one could run <code>uv add red-dwarf</code> and get
+        it.
+    </p>
+    <p>
+        I know it would bring some hurdles: find how to build the package,
+        perform checks on test.pypi, then host on pypi. But in the meantime, I
+        would have learned so much! I would have become such a better
+        programmer!
+    </p>
+    <p>Then I gave all that up.</p>
+    <h2>The split incident</h2>
+    <p>One morning I tried splitting the source code.</p>
+    <p>
+        The 600-lines code was easily split into 3 files: a main interface with
+        all user-facing stuff,
+        <code>server.py</code> for route registration and
+        <code>wire.py</code> for parsing and sending requests and responses.
+    </p>
+    <p>
+        It made sense, right? Easier for other people to read the code, and I
+        would lose nothing except...
+    </p>
+    <p>except the ability to curl.</p>
+    <h2>curl > uv</h2>
+    <p>
+        Consider an environment where you don't have access to uv, not so
+        uncommon under security restrictions like in corporate environments.
+        Being able to copy/paste the code is a boon.
+    </p>
+    <p>
+        After all, why wouldn't it be possible? One of the requirements of Red
+        Dwarf was pure Python, no external dependencies. Why waste this?
+    </p>
+    <p>
+        Requirements? Decently recent Python. Version? Check the comment at the
+        top of the file.
+    </p>
+    <p>
+        Secure? Sure, ask Claude. Anyhow, there's no supply chain attack on your
+        paperclip.
+    </p>
+    <p>
+        Sometimes the reason we can't have nice things is that we're afraid to
+        grab them.
+    </p>
+    <h2>Limitations</h2>
+    <p>
+        Sure, in an actual version control system, you'd want to keep track of
+        the RD version used (and that's if you <em>have</em> to grab it from
+        pypi and can't input it manually because of reasons).
+    </p>
+    <h2>Conclusion</h2>
+    <p>
+        Yeah fuck it we ball. I'll go single-file curl install for RD, and for
+        the two related upcoming projects as well.
+    </p>
+    <p>Hope nobody tells me to curl my enthusiasm.</p>
+</main>
