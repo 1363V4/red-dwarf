@@ -26,11 +26,18 @@ ul[indented] {
     margin-left: var(--m);
 }
 
+ul[dense] {
+    li {
+        margin-block: 0;
+    }
+}
+
 #title {
     padding-block: 0;
-    background: linear-gradient(0deg, var(--code), var(--black));
+    /*background: linear-gradient(0deg, var(--code), var(--black));*/
+    background: var(--black);
     /* background-clip: text; */
-    text-shadow: 0px 0px var(--code);
+    text-shadow: 1px 1px var(--code);
     filter: drop-shadow(Opx 2px 20px var(--blue));
     animation: shadow_anim 2s steps(16) infinite;
     line-break: anywhere;
@@ -42,7 +49,7 @@ ul[indented] {
 
 @keyframes shadow_anim {
     50% {
-        text-shadow: 2px 2px var(--red);
+        text-shadow: 1px 1px var(--red);
     }
 }
 
@@ -74,10 +81,11 @@ ul[indented] {
     }
 }
 
-.button_1, .button_2 {
+.button_1,
+.button_2 {
     width: max-content;
     border-radius: var(--s);
-    transition: box-shadow .1s linear;
+    transition: box-shadow 0.1s linear;
     &:hover {
         box-shadow: 0px 0px 5px 2px var(--code);
     }

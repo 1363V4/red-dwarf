@@ -74,6 +74,20 @@ async def process_form(request):
             <li><code>request.body</code>: b"..."</li>
         </ul>
     </details>
+    <details advanced class="gmb">
+        <summary><b>Advanced:</b> Running code before requests</summary>
+        To run code before processing requests, use the <code>@before_request</code> decorator.<br>
+        A common use case is to "reject" requests that don't have a security token:
+        <pre class="language-python">
+        <code>
+@before_request
+def check_token(request):
+    if not request.cookies.get("secret_key"):
+        return rd.redirect("/")</code>
+        </pre>
+        <p>Use sync functions under this decorator.</p>
+        <p>An early return will cancel request processing.</p>
+    </details>
     <h2 id="responses">Responses</h2>
     <p class="gmb">
         The way you respond to a user's request depends on the type of the request.

@@ -1,5 +1,15 @@
 # TODO
 
+today:
+
+- one big file from three
+- compare
+- test
+- uv blog
+
+fixed cookie bug, static is now async,
+regex for request parsing. shorter code, down to < 500 lines
+
 STARCORD
 
 - faut savoir si je veux async partout.
@@ -14,21 +24,13 @@ STARCORD
 - cors, vérifier si c'est pas fait par caddy, a priori oui
 - is it worth checking static first? measure bitch
 
-- thank lea for prism
-- package: uv add red_dwarf
-
-FUCK
-small est plus small
-j'ai pas style la scrollbar
-fuck on verra après les vacances
-
 GOTO LIVE CHECKLIST
 run reload to false
 reload from cwd.parent to cwd
 
-PEOPLE ON THE SITE
-
 possible bug si y'a pas de static folder?
+
+PEOPLE ON THE SITE
 
 # NOTES
 

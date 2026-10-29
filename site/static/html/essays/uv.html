@@ -2,14 +2,16 @@
     <h1>Leaving uv</h1>
     <p>
         For a while, I considered that this project would be
-        <em>done</em> when one could run <code>uv add red-dwarf</code> and get
-        it.
+        <strong>done</strong> when one could run
+        <code>uv add red-dwarf</code> to get it.
     </p>
     <p>
         I know it would bring some hurdles: find how to build the package,
-        perform checks on test.pypi, then host on pypi. But in the meantime, I
-        would have learned so much! I would have become such a better
-        programmer!
+        perform checks on test.pypi, then host on pypi...
+    </p>
+    <p>
+        But in the meantime, I would have learned so much! I would have become
+        such a better programmer!
     </p>
     <p>Then I gave all that up.</p>
     <h2>The split incident</h2>
@@ -24,12 +26,20 @@
         It made sense, right? Easier for other people to read the code, and I
         would lose nothing except...
     </p>
-    <p>except the ability to curl.</p>
+    <p><strong>except the ability to curl.</strong></p>
     <h2>curl > uv</h2>
     <p>
         Consider an environment where you don't have access to uv, not so
         uncommon under security restrictions like in corporate environments.
         Being able to copy/paste the code is a boon.
+    </p>
+    <p>
+        Or consider that pip/uv
+        <a
+            href="https://discuss.python.org/t/information-for-python-users-regarding-emudhra-emsign-ca-certificate-security-incident/109576"
+            >can be compromised
+        </a>
+        as in the eMudhra incident.
     </p>
     <p>
         After all, why wouldn't it be possible? One of the requirements of Red
@@ -40,8 +50,8 @@
         top of the file.
     </p>
     <p>
-        Secure? Sure, ask Claude. Anyhow, there's no supply chain attack on your
-        paperclip.
+        Secure? Sure, ask Claude to review it for all I care. Anyhow, there's no
+        supply chain attack on your paperclip.
     </p>
     <p>
         Sometimes the reason we can't have nice things is that we're afraid to
@@ -58,5 +68,6 @@
         Yeah fuck it we ball. I'll go single-file curl install for RD, and for
         the two related upcoming projects as well.
     </p>
+    <p>My focus is make sure the code is readable top to bottom.</p>
     <p>Hope nobody tells me to curl my enthusiasm.</p>
 </main>

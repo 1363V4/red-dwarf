@@ -41,3 +41,13 @@ ESSAY_PYTHON = _base_template(_html_parts["ESSAY_PYTHON"])
 ESSAY_REAL = _base_template(_html_parts["ESSAY_REAL"])
 ESSAY_BOTTLE = _base_template(_html_parts["ESSAY_BOTTLE"])
 ESSAY_UV = _base_template(_html_parts["ESSAY_UV"])
+
+# le problème
+# c'est que soit tu utilises des fonctions
+# mais en soit Div est une fonction
+# qui veut dire ce qu'elle veut dire
+# c'est juste que tu veux passer des arguments
+# ça fait eaucoup de redite:
+# def make_colored_div(color):
+# 	return f"<div style='color={color}'></div>"
+# comment faire "fonctionner" du xml ?

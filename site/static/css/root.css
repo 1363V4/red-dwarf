@@ -71,6 +71,8 @@ html {
     font-size: var(--s);
     line-height: var(--m);
     font-family: "redtxt", system-ui;
+    scrollbar-width: thin;
+    scrollbar-color: var(--blue) var(--black);
 }
 
 body {
@@ -122,7 +124,7 @@ header {
     background-color: var(--black);
     display: grid;
     margin-bottom: var(--m);
-    border-bottom: 2px groove var(--blue);
+    border-bottom: 2px groove var(--code);
     padding-inline: var(--s);
     height: fit-content;
 
@@ -139,6 +141,10 @@ header {
             height: 32px;
             cursor: pointer;
         }
+    }
+
+    #cool-gif {
+        border-radius: 1rem;
     }
 
     #side_panel {
@@ -179,8 +185,8 @@ footer {
     font-family: "redres";
     margin-top: var(--m);
     width: 100%;
-    color: var(--black);
     margin-bottom: var(--s);
+    gap: var(--s);
     p {
         font-size: var(--xs);
         padding-inline: var(--l);
@@ -188,6 +194,9 @@ footer {
         background: var(--blue);
         /* background: linear-gradient(var(--black), var(--blue) 20%, var(--blue) 80%, var(--black)); */
         border-radius: var(--xl);
+    }
+    img {
+        border-radius: var(--m);
     }
 }
 

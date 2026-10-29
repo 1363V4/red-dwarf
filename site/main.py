@@ -6,11 +6,14 @@ import logging
 from pathlib import Path
 from time import asctime
 
+# import red_dwarf as rd
+import rd
 from pages import (
     ESSAY_BOTTLE,
     ESSAY_DATASTAR,
     ESSAY_PYTHON,
     ESSAY_REAL,
+    ESSAY_UV,
     ESSAY_V0,
     PAGE_DOCS,
     PAGE_ESSAYS,
@@ -20,8 +23,6 @@ from pages import (
     PAGE_INDEX,
     PAGE_RED,
 )
-
-import red_dwarf as rd
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
@@ -34,10 +35,11 @@ _DB_PATH = _SITE_DIR / "database.json"
 with open(_DB_PATH) as db:
     database = json.load(db)
 
-# @rd.before_request
-# def cookie_check(request):
-#     pprint(request)
-#     pass
+
+@rd.before_request
+def cookie_check(request):
+    print(request.headers)
+
 
 # @rd.after_response
 # def log(request, response):
@@ -132,6 +134,7 @@ async def essay_page(request):
         "python.html": ESSAY_PYTHON,
         "real.html": ESSAY_REAL,
         "bottle.html": ESSAY_BOTTLE,
+        "uv.html": ESSAY_UV,
     }
     essay = request.params.get("essay")
     page = d_essay.get(essay)
@@ -161,6 +164,6 @@ async def test(request):
 
 if __name__ == "__main__":
     rd.run(reload=True)
-    #rd.run(sock="/run/legovh/rd.sock")
+    # rd.run(sock="/run/legovh/rd.sock")
 
 # viande out

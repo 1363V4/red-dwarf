@@ -1,4 +1,4 @@
-from .server import (
+from .red_dwarf import (
     # after_response,
     before_request,
     delete,
