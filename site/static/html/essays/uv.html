@@ -1,37 +1,34 @@
 <main>
     <h1>Leaving uv</h1>
     <p>
-        For a while, I considered that this project would be
+        I thought this project would be
         <strong>done</strong> when one could run
         <code>uv add red-dwarf</code> to get it.
     </p>
+    <p>You know, like how serious libraries do.</p>
     <p>
-        I know it would bring some hurdles: find how to build the package,
+        I know it would bring some hurdles, sure: find how to build the package,
         perform checks on test.pypi, then host on pypi...
     </p>
     <p>
-        But in the meantime, I would have learned so much! I would have become
-        such a better programmer!
+        I would have learned so much! I would have become such a better
+        programmer!
     </p>
-    <p>Then I gave all that up.</p>
+    <p>But maybe that's not the way.</p>
     <h2>The split incident</h2>
-    <p>One morning I tried splitting the source code.</p>
+    <p>One morning I split the source code into smaller files.</p>
     <p>
         The 600-lines code was easily split into 3 files: a main interface with
         all user-facing stuff,
         <code>server.py</code> for route registration and
         <code>wire.py</code> for parsing and sending requests and responses.
     </p>
-    <p>
-        It made sense, right? Easier for other people to read the code, and I
-        would lose nothing except...
-    </p>
+    <p>It made sense, right? I would lose nothing except...</p>
     <p><strong>except the ability to curl.</strong></p>
     <h2>curl > uv</h2>
     <p>
         Consider an environment where you don't have access to uv, not so
         uncommon under security restrictions like in corporate environments.
-        Being able to copy/paste the code is a boon.
     </p>
     <p>
         Or consider that pip/uv
@@ -42,20 +39,21 @@
         as in the eMudhra incident.
     </p>
     <p>
+        Now, imagine <strong>one file</strong> that does what it says. Just one
+        file. You certainly won't regret one file.
+    </p>
+    <p>
         After all, why wouldn't it be possible? One of the requirements of Red
         Dwarf was pure Python, no external dependencies. Why waste this?
     </p>
     <p>
         Requirements? Decently recent Python. Version? Check the comment at the
-        top of the file.
+        top of the file. Docs? Online, and a <code>.md</code> version for you
+        and your clanker.
     </p>
     <p>
-        Secure? Sure, ask Claude to review it for all I care. Anyhow, there's no
-        supply chain attack on your paperclip.
-    </p>
-    <p>
-        Sometimes the reason we can't have nice things is that we're afraid to
-        grab them.
+        Secure? Sure, ask Claude to review it for all I care. Watch for supply
+        chain attack on your clipboard, they're spooky.
     </p>
     <h2>Limitations</h2>
     <p>
@@ -63,10 +61,14 @@
         the RD version used (and that's if you <em>have</em> to grab it from
         pypi and can't input it manually because of reasons).
     </p>
+    <p>
+        But sometimes the reason we can't have nice things is that we're afraid
+        to grab them.
+    </p>
     <h2>Conclusion</h2>
     <p>
-        Yeah fuck it we ball. I'll go single-file curl install for RD, and for
-        the two related upcoming projects as well.
+        Yeah fuck it we ball. I went single-file curl install for RD. Cut code
+        down to less than 500LOC.
     </p>
     <p>My focus is make sure the code is readable top to bottom.</p>
     <p>Hope nobody tells me to curl my enthusiasm.</p>
