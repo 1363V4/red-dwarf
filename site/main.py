@@ -36,9 +36,9 @@ with open(_DB_PATH) as db:
     database = json.load(db)
 
 
-@rd.before_request
-def cookie_check(request):
-    print(request.headers)
+# @rd.before_request
+# def cookie_check(request):
+#     print(request.headers)
 
 
 # @rd.after_response
@@ -57,7 +57,7 @@ async def index(request):
 
 @rd.get("/docs")
 async def docs(request):
-    return rd.html(PAGE_DOCS, headers=["Wait: What"])
+    return rd.html(PAGE_DOCS, headers={"Wait": "What"})
 
 
 @rd.get("/red")
