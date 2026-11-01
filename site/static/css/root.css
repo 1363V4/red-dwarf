@@ -73,6 +73,7 @@ html {
     font-family: "redtxt", system-ui;
     scrollbar-width: thin;
     scrollbar-color: var(--blue) var(--black);
+    scrollbar-gutter: stable;
 }
 
 body {
