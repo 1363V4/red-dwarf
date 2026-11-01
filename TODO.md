@@ -1,15 +1,5 @@
 # TODO
 
-today:
-
-- one big file from three
-- compare
-- test
-- uv blog
-
-fixed cookie bug, static is now async,
-regex for request parsing. shorter code, down to < 500 lines
-
 STARCORD
 
 - faut savoir si je veux async partout.

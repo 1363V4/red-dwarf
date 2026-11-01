@@ -3,31 +3,33 @@
 
     <h2>Installation</h2>
     <p>
-        Red Dwarf is not available on PyPI yet. For now, clone the GitHub
-        repository and extract the <code>red_dwarf</code> package into your
-        project. Once it is on your Python path, you can start writing your
-        application.
+        Go
+        <a
+            href="https://github.com/1363V4/red-dwarf/blob/master/site/rd.py"
+            target="_blank"
+            >here</a
+        >
+        and copy the code in a file named <code>rd.py</code>.
     </p>
+    <p>That's it!</p>
 
     <h2>Your first app</h2>
     <p>
-        A Red Dwarf application is just a collection of routes returning HTML.
-        Let's build one in three small steps.
+        Then create another file named <code>main.py</code>. This is where we'll
+        create our application.
     </p>
-    <p>
-        Start with a page that says hello.
-    </p>
-    <pre class="language-python"><code>import red_dwarf as rd
+    <p>Let's start with a welcome page.</p>
+    <pre class="language-python"><code>import rd
 
 &#64;rd.get(&quot;/&quot;)
-async def index(request):
+async def hello(request):
     return rd.html(&quot;&quot;&quot;
 &lt;!doctype html&gt;
 &lt;html lang=&quot;en&quot;&gt;
   &lt;head&gt;
     &lt;meta charset=&quot;utf-8&quot;&gt;
     &lt;title&gt;Hello&lt;/title&gt;
-    &lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js&quot;&gt;&lt;/script&gt;
+    &lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js&quot;&gt;&lt;/script&gt;
   &lt;/head&gt;
   &lt;body&gt;
     &lt;main&gt;
@@ -41,11 +43,12 @@ async def index(request):
 &quot;&quot;&quot;)
 
 if __name__ == &quot;__main__&quot;:
-    rd.run()
+    rd.run(reload=True)
 </code></pre>
-    <p>Note that routes are automatically registered.</p>
+    <p>Then, simply run <code>python main.py</code>.</p>
     <p>
-        Open <code>http://127.0.0.1:8080/</code> and you should see your first page.
+        Open <code>http://127.0.0.1:8080/</code> and you should see your first
+        page.
     </p>
 
     <h2>Update an element</h2>
@@ -53,11 +56,8 @@ if __name__ == &quot;__main__&quot;:
         Returning a patch lets you replace part of the page without sending the
         whole document again.
     </p>
-    <p>
-        Careful, the request has to be triggered by a Datastar action!
-    </p>
-    <pre class="language-python"><code>import red_dwarf as rd
-
+    <p>Let's add a route to do that under our "hello" route.</p>
+    <pre class="language-python"><code>
 &#64;rd.get(&quot;/message&quot;)
 async def message(request):
     return rd.patch(&quot;&quot;&quot;
@@ -67,15 +67,25 @@ async def message(request):
 &quot;&quot;&quot;)
 </code></pre>
     <p>
-        Only the element with <code>id="message"</code> changes. Everything else stays exactly where it is.
+        Because we ran Red Dwarf with <code>reload=True</code>, the server
+        restarts automatically when you save the file.
     </p>
+    <p>
+        <strong>Reload your page</strong> and click on the "Simple Update"
+        button. Magic!
+    </p>
+    <p>
+        Only the element with <code>id="message"</code> changes. Everything else
+        stays exactly where it is.
+    </p>
+    <p>Remember, the request has to be triggered by a Datastar action!</p>
 
     <h2>Streamed updates</h2>
     <p>
-        If a route returns a Python generator, Red Dwarf keeps the connection open and sends each patch as it is produced.
+        If a route returns a Python generator, Red Dwarf keeps the connection
+        open and sends each patch as it is produced.
     </p>
-    <pre class="language-python"><code>import red_dwarf as rd
-import asyncio
+    <pre class="language-python"><code>import asyncio
 
 &#64;rd.get(&quot;/clock&quot;)
 async def clock(request):
@@ -87,21 +97,20 @@ async def clock(request):
 &quot;&quot;&quot;)
         await asyncio.sleep(1)
 </code></pre>
+    <h2>Conclusion</h2>
+    <p>That's all there is to it.</p>
     <p>
-        That's all there is to it.
+        Your application starts with plain HTML, and whenever something changes,
+        you send a small HTML fragment describing the new state.
     </p>
+    <small>
+        Or a big one! You can morph the whole HTML if you want. We call this
+        <q>fat morph</q> and <q>view = f(state)</q>.
+    </small>
     <p>
-        Your application starts with plain HTML, and whenever something changes, you send a small HTML fragment describing the new state.
+        We encourage you to read the
+        <a href="/docs">Docs</a>, they're short and contain everything that Red
+        Dwarf can do.
     </p>
-    <p>
-        Or a big one! You can morph the whole HTML if you want. We call this <q>view = f(state)</q>.
-    </p>
-    <p>
-        More information on the 
-        <a href="https://data-star.dev/reference">Datastar website</a>
-        .
-    </p>
-    <p>
-        Now go build!
-    </p>
+    <p>Now go build!</p>
 </main>

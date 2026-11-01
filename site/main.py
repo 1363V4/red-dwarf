@@ -1,12 +1,10 @@
 # from html import escape
 
-# import other_site ... i'll do that for examples page
 import json
 import logging
 from pathlib import Path
 from time import asctime
 
-# import red_dwarf as rd
 import rd
 from pages import (
     ESSAY_BOTTLE,
@@ -34,19 +32,6 @@ _DB_PATH = _SITE_DIR / "database.json"
 
 with open(_DB_PATH) as db:
     database = json.load(db)
-
-
-# @rd.before_request
-# def cookie_check(request):
-#     print(request.headers)
-
-
-# @rd.after_response
-# def log(request, response):
-#     print(f"Another successful response on {request.path}!")
-#     response.body = response.body.replace("RED", "BLUE")
-#     print(response)
-#     return response
 
 
 @rd.get("/")
@@ -93,8 +78,6 @@ async def redi(request):
 @rd.post("/time")
 async def time(request):
     time = asctime()
-    # hmmm ptet script est bien
-    # ajouter à un counter persisté
     database["asks"] += 1
     with open(_DB_PATH, "w") as db:
         json.dump(database, db)
@@ -104,30 +87,8 @@ async def time(request):
     yield rd.patch(f"<div id=brag>I've been asked {database['asks']} times</div>")
 
 
-# @rd.get("/docs/<folder_id>/<document_id>")
-# async def serve_document(request):
-#     print(request.method)
-#     # 'GET'
-#     print(request.raw_path)
-#     # '/docs/folder18/document4?page=42'
-#     print(request.path)
-#     # '/docs/folder18/document4'
-#     print(request.params)
-#     # {'folder_id': 'folder18', 'document_id': 'document4'}
-#     print(request.query)
-#     # {'page': ['2']}
-#     print(request.headers)
-#     # {'host': '...', ...}
-#     print(request.body)
-#     # b''
-#     print(request.signals)
-#     # {'theme': 'light'}
-#     return rd.html("ok")
-
-
 @rd.get("/essays/<essay>")
 async def essay_page(request):
-    # request should be req
     d_essay = {
         "v0.html": ESSAY_V0,
         "datastar.html": ESSAY_DATASTAR,
@@ -143,27 +104,7 @@ async def essay_page(request):
     else:
         return rd.redirect("/")
 
-
-@rd.get("/test")
-async def test(request):
-    # yield rd.patch("<div id='bibi'>ok</div>")
-    # yield rd.patch("<div id='bibi'>nok</div>")
-    return rd.html("<div id='bibi'>nok</div>")
-
-
-# @rd.get("/sse_stream")
-# async def sse_stream(request):
-#     try:
-#         while True:
-#             yield rd.patch("""
-#         <main id="main">got it</main>
-#         """)
-#             await asyncio.sleep(1)
-#     finally:
-#         print("cleanup")
-
 if __name__ == "__main__":
     rd.run(reload=True)
     # rd.run(sock="/run/legovh/rd.sock")
-
-# viande out
+    # i toggle between both for dev and prod
