@@ -2,13 +2,14 @@
 
 ![Red Dwarf](site/static/img/logo_124.png)
 
-**Website:** [red.leg.ovh](https://red.leg.ovh) · **Docs:** [/docs](https://red.leg.ovh/docs) · **GitHub:** [1363V4/red-dwarf](https://github.com/1363V4/red-dwarf)
+**Website:** [red.leg.ovh](https://red.leg.ovh)
 
 Red Dwarf is a zero-dependency async HTTP/1.1 server for Python, built around [Datastar](https://data-star.dev/).
 
 ## Why Red Dwarf?
 
 Datastar supercharges the backend. **But the backend is more than a web server!**
+
 So it is Red Dwarf's philosophy that the server should be as simple as possible,
 because there are other fish to fry.
 
@@ -22,10 +23,10 @@ Red Dwarf is a good first step with Datastar. For multiple workers, middleware s
 
 ## Links
 
-[Getting Started](https://red.leg.ovh/getting_started)
-[Docs](https://red.leg.ovh/docs)
-[Essays](https://red.leg.ovh/essays)
-[FAQ](https://red.leg.ovh/faq)
+- [Getting Started](https://red.leg.ovh/getting_started)
+- [Docs](https://red.leg.ovh/docs)
+- [Essays](https://red.leg.ovh/essays)
+- [FAQ](https://red.leg.ovh/faq)
 
 ## Quickstart
 
