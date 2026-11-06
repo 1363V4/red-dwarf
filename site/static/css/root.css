@@ -49,7 +49,7 @@
 @media (prefers-color-scheme: light) {
     :root {
         --white: #070204de;
-        --black: #ffffff80;
+        --black: #fff;
         --strong: #000;
     }
     .ioda {
@@ -106,10 +106,6 @@ strong {
     color: var(--strong);
 }
 
-img {
-    /* mix-blend-mode: lighten; */
-}
-
 hr {
     color: var(--blue);
     max-width: 567px;
@@ -153,6 +149,12 @@ header {
             line-height: var(--s);
             width: fit-content;
             place-self: center;
+            &:hover {
+                color: var(--code);
+            }
+            a {
+                text-decoration: none;
+            }
         }
     }
     #side_panel:not([opened]) {
@@ -189,20 +191,17 @@ footer {
     margin-bottom: var(--s);
     gap: var(--s);
     p {
-        font-size: var(--xs);
+        font-size: var(--s);
         padding-inline: var(--l);
         text-align: center;
-        background: var(--blue);
+        color: var(--white);
+        border: 1px solid var(--white);
         /* background: linear-gradient(var(--black), var(--blue) 20%, var(--blue) 80%, var(--black)); */
-        border-radius: var(--xl);
+        border-radius: var(--xs);
     }
     img {
-        border-radius: var(--m);
+        border-radius: var(--xs);
     }
-}
-
-pre {
-    /* max-width: 80dvi; */
 }
 
 code {
@@ -210,6 +209,12 @@ code {
     /* font-family: redhat; */
     font-size: inherit;
     overflow-wrap: anywhere;
+    &:not(.language-python) &:not(.language-markdown) {
+        color: var(--code);
+        background-color: var(--white);
+        border-radius: var(--s);
+        padding-inline: var(--xs);
+    }
 }
 
 details {
@@ -235,6 +240,11 @@ li {
     margin-block: var(--xs);
 }
 
-code.language-markdown {
+pre[class*="language-"] {
     white-space: pre-wrap;
+    padding-inline: var(--s);
+    margin-block: var(--m);
+    @media (prefers-color-scheme: light) {
+        filter: invert(1);
+    }
 }

@@ -32,7 +32,6 @@ import time
 from collections import namedtuple
 from contextlib import aclosing, suppress
 from dataclasses import dataclass, field
-from html import escape
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from pathlib import Path
@@ -155,7 +154,8 @@ async def _read_request(reader):
         if _FORBIDDEN.search(path):
             raise ValueError
         query = parse_qs(qs)
-        logger.info("Received %s request on %s", method, escape(path))  # telemetry ftw
+        # logging uses cpu. i'll disable it for now
+        # logger.info("Received %s request on %s", method, escape(path))
 
         headers = {}
         while (header_line := await reader.readline()) != b"\r\n":
@@ -465,8 +465,8 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
     is_child = bool(os.environ.get(_CHILD_ENV))
 
     if not is_child:
-        logger.info("Hello and welcome!")
-        logger.info("Thank you for using Red Dwarf.")
+        logger.info("Hello there!")
+        logger.info("Thank you for using Red Dwarf <3")
         logger.info("Here are some recommendations to start:")
         logger.info("1. Read the Tao of Datastar")
         logger.info("2. Remember to escape user input")

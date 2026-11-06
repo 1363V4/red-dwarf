@@ -18,6 +18,57 @@
         Then create another file named <code>main.py</code>. This is where we'll
         create our application.
     </p>
+    <p>We'll go step by step</p>
+    <details advanced>
+        <summary>Give me the full code</summary>
+        <pre class="language-python"><code>import rd
+
+&#64;rd.get(&quot;/&quot;)
+async def hello(request):
+    return rd.html(&quot;&quot;&quot;
+&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;title&gt;Hello&lt;/title&gt;
+    &lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js&quot;&gt;&lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;main&gt;
+        &lt;h1&gt;Hello, world!&lt;/h1&gt;
+        &lt;p id=&quot;message&quot;&gt;Welcome to Red Dwarf.&lt;/p&gt;
+        &lt;button data-on:click=&quot;@get('/message')&quot;&gt;Simple Update&lt;/button&gt;
+        &lt;button data-on:click=&quot;@get('/clock')&quot;&gt;Streamed Update&lt;/button&gt;
+    &lt;/main&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+&quot;&quot;&quot;)
+
+
+&#64;rd.get(&quot;/message&quot;)
+async def message(request):
+    return rd.patch(&quot;&quot;&quot;
+&lt;p id=&quot;message&quot;&gt;
+  This text was updated by the server.
+&lt;/p&gt;
+&quot;&quot;&quot;)
+
+
+&#64;rd.get(&quot;/clock&quot;)
+async def clock(request):
+    while True:
+        yield rd.patch(f&quot;&quot;&quot;
+&lt;p id=&quot;message&quot;&gt;
+  The time is {asyncio.get_running_loop().time():.0f}.
+&lt;/p&gt;
+&quot;&quot;&quot;)
+        await asyncio.sleep(1)
+
+
+if __name__ == &quot;__main__&quot;:
+    rd.run(reload=True)
+    </code></pre>
+    </details>
     <p>Let's start with a welcome page.</p>
     <pre class="language-python"><code>import rd
 

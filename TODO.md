@@ -1,12 +1,14 @@
 # TODO
 
+add before_stratup
+better private
+
 STARCORD
 
 - faut savoir si je veux async partout.
 - after event??? ON AIME???
 - merde, je peux pas modifier réponse. j'autorise ou pas ?
 - pour répondre à ces trois questions je dois commencer les essais. pas le choix.
-- merde: quand je change main, ça reload mal
 
 - en vrai patch et script je peux (non)
 
@@ -16,7 +18,6 @@ STARCORD
 
 GOTO LIVE CHECKLIST
 run reload to false
-reload from cwd.parent to cwd
 
 possible bug si y'a pas de static folder?
 
@@ -55,9 +56,3 @@ Really Efficient Design
 starlette ou litestar quand on aura fini de rigoler ?
 litestar non
 on a un bench ici (fortune cookie): https://www.techempower.com/benchmarks/#hw=ph&test=fortune&l=zijzen-sf&section=data-r23
-
----
-
-page 263 du livre pandas
-
----

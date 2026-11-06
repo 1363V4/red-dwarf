@@ -1,15 +1,14 @@
 <main>
-    <h1>Docs</h1>
     <div class="gc">
-        <nav class="gm-l gt-s">
+        <nav class="gt-s">
             <h2>Table Of Contents</h2>
             <p><a href="#routes">Routes</a></p>
             <p><a href="#requests">Requests</a></p>
             <p><a href="#responses">Responses</a></p>
             <p><a href="#app">App</a></p>
-            <!--<p><a href="#lifecycle">Lifecycle</a></p>-->
         </nav>
     </div>
+    <h1>Docs</h1>
     <h2 id="routes">Routes</h2>
     <p>A route is code you run when a user requests an URL.</p>
     <p>Define routes with an async function + a decorator.</p>
@@ -63,7 +62,7 @@ async def process_form(request):
     print(request.signals)
     # {'username': 'red'}</code>
     </pre>
-    <details advanced class="gmb">
+    <details advanced>
         <summary><b>Advanced:</b> Other data stored in request</summary>
         Here is the rest of the data stored in request:
         <ul indented>
@@ -216,24 +215,6 @@ if __name__ == "__main__":
     rd.run(sock="/unix.sock")</code>
         </pre>
     </details>
-    <!--<h2 id="lifecycle">Lifecycle</h2>
-    <p>
-        Red Dwarf gives you useful <code>before_request</code> /
-        <code>after_response</code> decorators.
-    </p>
-    <p>It's... pretty straightforward.</p>
-    <p>Note: With <code>before_request</code>, you can return early.</p>
-    <pre class="language-python gmb">
-    <code>
-@rd.before_request
-def cookie_check(request):
-if not request.get("user_id"):
-    return rd.redirect("/")
-
-@rd.after_response
-def log(request):
-    logger.info(f"Another successful response on {request.path}!")</code>
-    </pre>-->
     <h2>Off you go!</h2>
     <p>Go build something cool!</p>
     <p>
