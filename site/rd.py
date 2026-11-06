@@ -1,6 +1,6 @@
 # Red Dwarf
 # ---------
-# Version: 1.0
+# Version: 1.0.1
 # Author: Louis Sunshine
 # Permalink: https://github.com/1363V4/red-dwarf
 # Website: https://red.leg.ovh/
@@ -155,7 +155,7 @@ async def _read_request(reader):
         if _FORBIDDEN.search(path):
             raise ValueError
         query = parse_qs(qs)
-        logger.info(f"Received {method} request on {escape(path)}")  # telemetry ftw
+        logger.info("Received %s request on %s", method, escape(path))  # telemetry ftw
 
         headers = {}
         while (header_line := await reader.readline()) != b"\r\n":
@@ -220,15 +220,6 @@ def _we_got_cookies(cookies):
             ]
         )
     return [morsel.OutputString() for morsel in cookie_jar.values()]
-
-    # morsel.update(
-    #     {
-    #         'path': "/",
-    #         'secure': True,
-    #         'httponly': True,
-    #         'samesite': "Lax",
-    #     }
-    # )
 
 
 def html(body, headers=None, cookies=None):

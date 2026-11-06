@@ -65,16 +65,6 @@ async def examples(request):
     return rd.html(PAGE_EXAMPLES)
 
 
-@rd.get("/essays")
-async def essays(request):
-    return rd.html(PAGE_ESSAYS)
-
-
-@rd.get("/redi")
-async def redi(request):
-    return rd.redirect("/")
-
-
 @rd.post("/time")
 async def time(request):
     time = asctime()
@@ -85,6 +75,11 @@ async def time(request):
         f"<div id=time>Hi! I am a 3$ server in Germany and now is {time}</div>"
     )
     yield rd.patch(f"<div id=brag>I've been asked {database['asks']} times</div>")
+
+
+@rd.get("/essays")
+async def essays(request):
+    return rd.html(PAGE_ESSAYS)
 
 
 @rd.get("/essays/<essay>")
@@ -103,6 +98,7 @@ async def essay_page(request):
         return rd.html(page)
     else:
         return rd.redirect("/")
+
 
 if __name__ == "__main__":
     rd.run(reload=True)
