@@ -69,7 +69,6 @@ html {
     /* font-size: var(--m);
     line-height: var(--l); */
     font-size: var(--s);
-    line-height: var(--m);
     font-family: "redtxt", system-ui;
     scrollbar-width: thin;
     scrollbar-color: var(--blue) var(--black);
@@ -120,7 +119,6 @@ header {
     font-family: "slkscr";
     background-color: var(--black);
     display: grid;
-    margin-bottom: var(--m);
     border-bottom: 2px groove var(--code);
     padding-inline: var(--s);
     height: fit-content;
@@ -192,7 +190,7 @@ footer {
     gap: var(--s);
     p {
         font-size: var(--s);
-        padding-inline: var(--l);
+        padding-inline: var(--s);
         text-align: center;
         color: var(--white);
         border: 1px solid var(--white);

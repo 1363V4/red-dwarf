@@ -1,11 +1,20 @@
 @layer reset, config, screens, layouts, grids, utilities;
 
 @layer reset {
-    * {
+    *,
+    ::before,
+    ::after {
         box-sizing: border-box;
+    }
+    * {
         margin: 0;
         padding: 0;
+    }
+    html {
         text-wrap: pretty;
+    }
+    [hidden] {
+        display: none !important;
     }
     h1,
     h2,
@@ -22,7 +31,9 @@
     button,
     input[type="submit"],
     input[type="reset"] {
-        cursor: pointer;
+        &:enabled {
+            cursor: pointer;
+        }
     }
     button,
     input,
@@ -41,15 +52,14 @@
     select {
         field-sizing: content;
     }
-    menu,
-    ol,
-    li {
-        display: list-item;
-        list-style: auto;
+    dialog,
+    [popover] {
+        margin: auto;
     }
     hr {
         border: none;
         border-top: 1px solid currentColor;
+        color: inherit;
         width: 100%;
     }
     table {
@@ -69,6 +79,7 @@
     svg,
     video {
         display: block;
+        max-inline-size: 100%;
     }
 }
 
@@ -85,7 +96,7 @@
     }
     html {
         font-size: var(--m);
-        line-height: var(--m);
+        line-height: 1.618;
     }
 }
 
@@ -103,6 +114,8 @@
         position: absolute;
         z-index: 1618;
         inset: 50%;
+        justify-content: center;
+        align-content: center;
     }
 }
 
@@ -133,27 +146,23 @@
     .gg01,
     .gg01d {
         display: grid;
-        grid-template-columns: 1fr 1.618fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr);
         grid-template-rows: 1fr;
-    }
-    @media (width < 567px) {
-        .gg01d {
-            display: grid;
-            grid-template-rows: 1fr 1.618fr;
-            grid-template-columns: 1fr;
-        }
     }
     .gg10,
     .gg10d {
         display: grid;
-        grid-template-columns: 1.618fr 1fr;
+        grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr);
         grid-template-rows: 1fr;
     }
     @media (width < 567px) {
+        .gg01d {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: 1fr 1.618fr;
+        }
         .gg10d {
-            display: grid;
+            grid-template-columns: minmax(0, 1fr);
             grid-template-rows: 1.618fr 1fr;
-            grid-template-columns: 1fr;
         }
     }
 }
@@ -205,30 +214,23 @@
 
     .gt-xxs {
         font-size: var(--xxs);
-        line-height: var(--xxs);
     }
     .gt-xs {
         font-size: var(--xs);
-        line-height: var(--xs);
     }
     .gt-s {
         font-size: var(--s);
-        line-height: var(--s);
     }
     .gt-m {
         font-size: var(--m);
-        line-height: var(--m);
     }
     .gt-l {
         font-size: var(--l);
-        line-height: var(--l);
     }
     .gt-xl {
         font-size: var(--xl);
-        line-height: var(--xl);
     }
     .gt-xxl {
         font-size: var(--xxl);
-        line-height: var(--xxl);
     }
 }
