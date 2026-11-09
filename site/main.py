@@ -37,12 +37,12 @@ with open(_DB_PATH) as db:
 @rd.get("/")
 async def index(request):
     logger.info("Hello there")
-    return rd.html(PAGE_INDEX, cookies={"laid": "up"})
+    return rd.html(PAGE_INDEX)
 
 
 @rd.get("/docs")
 async def docs(request):
-    return rd.html(PAGE_DOCS, headers={"Wait": "What"})
+    return rd.html(PAGE_DOCS)
 
 
 @rd.get("/red")
@@ -71,9 +71,7 @@ async def time(request):
     database["asks"] += 1
     with open(_DB_PATH, "w") as db:
         json.dump(database, db)
-    yield rd.patch(
-        f"<div id=time>Hi! I am a 3$ server in Germany and now is {time}</div>"
-    )
+    yield rd.patch(f"<div id=time>Hi! Now is {time}</div>")
     yield rd.patch(f"<div id=brag>I've been asked {database['asks']} times</div>")
 
 
