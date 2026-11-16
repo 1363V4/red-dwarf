@@ -5,6 +5,7 @@
             <p><a href="#routes">Routes</a></p>
             <p><a href="#requests">Requests</a></p>
             <p><a href="#responses">Responses</a></p>
+            <p><a href="#lifecycle">Lifecycle</a></p>
             <p><a href="#app">App</a></p>
         </nav>
     </div>
@@ -179,9 +180,24 @@ async def old_version(request):
     return rd.redirect("/v2")</code>
         </pre>
     </details>
+    <h2 id="lifecycle">Lifecycle</h2>
+    <p>You have two decorators to run code before startup or after shutdown.</p>
+    <p>Useful for: connecting to a database, setting up queues, timers...</p>
+    <p>Async functions only.</p>
+    <pre class="language-python">
+    <code>
+@rd.before_startup
+async def connect_to_db():
+    await db.connect()
+    await asyncio.to_thread(watcher)
+
+@rd.after_shutdown
+async def close_db():
+    await db.close()</code>
+    </pre>
     <h2 id="app">App</h2>
     <p>That's all! You now know how to use Red Dwarf.</p>
-    <p>The last thing you need to do is launch your app</p>
+    <p>The last thing you need to do is launch your app:</p>
     <pre class="language-python">
     <code>
 if __name__ == "__main__":
