@@ -86,7 +86,7 @@
 @layer config {
     :root {
         --phi: calc((1 + sqrt(5)) / 2);
-        --m: 1rem;
+        --m: 32px;
         --xxs: calc(var(--m) * pow(var(--phi), -3));
         --xs: calc(var(--m) * pow(var(--phi), -2));
         --s: calc(var(--m) * pow(var(--phi), -1));
@@ -108,6 +108,11 @@
 
     .gw {
         padding-inline: 19.1dvw;
+    }
+    @media (width < 567px) {
+        .gw {
+            padding-inline: calc(var(--m) / 2);
+        }
     }
 
     .go {

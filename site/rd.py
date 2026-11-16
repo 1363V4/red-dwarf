@@ -1,6 +1,6 @@
 # Red Dwarf
 # ---------
-# Version: 1.0.1
+# Version: 1.1.0
 # Author: Louis Sunshine
 # Permalink: https://github.com/1363V4/red-dwarf
 # Website: https://red.leg.ovh/
@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from pathlib import Path
+from typing import final
 from urllib.parse import parse_qs, unquote
 
 logger = logging.getLogger(__name__)
@@ -417,6 +418,32 @@ async def _serve(host, port, sock):
     await server.serve_forever()
 
 
+# LIFECYCLE
+
+_before_startup = []
+_after_shutdown = []
+
+
+def before_startup(fn):
+    _before_startup.append(fn)
+    return fn
+
+
+def after_shutdown(fn):
+    _after_shutdown.append(fn)
+    return fn
+
+
+async def _serve_with_lifecycle(host, port, sock):
+    try:
+        for fn in _before_startup:
+            await fn()
+        await _serve(host, port, sock)
+    finally:
+        for fn in reversed(_after_shutdown):
+            await fn()
+
+
 # MAIN
 
 
@@ -469,7 +496,7 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
         logger.info("Thank you for using Red Dwarf <3")
         logger.info("Here are some recommendations to start:")
         logger.info("1. Read the Tao of Datastar")
-        logger.info("2. Remember to escape user input")
+        logger.info("2. Escape user input")
         logger.info("3. ???")
         logger.info("4. Profit!")
 
@@ -478,4 +505,5 @@ def run(host="127.0.0.1", port=8080, sock=None, reload=False):
             _run_with_reload()
     else:
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-        asyncio.run(_serve(host, port, sock))
+        asyncio.run(_serve_with_lifecycle(host, port, sock))
+    logger.info("Red Dwarf out.")

@@ -98,6 +98,11 @@ async def essay_page(request):
         return rd.redirect("/")
 
 
+@rd.before_startup
+async def test_that():
+    logger.info("RRR")
+
+
 if __name__ == "__main__":
     rd.run(reload=True)
     # rd.run(sock="/run/legovh/rd.sock")

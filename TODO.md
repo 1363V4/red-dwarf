@@ -1,6 +1,6 @@
 # TODO
 
-add before_stratup
+PROBLEME DE PARSING EMOJI !§§§
 better private
 
 STARCORD
