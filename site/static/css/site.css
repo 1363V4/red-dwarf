@@ -63,6 +63,7 @@ ul[dense] {
         animation: shadow_anim 2s steps(16) infinite;
         color: var(--white);
     }
+    word-break: break-all;
 }
 
 @keyframes shadow_anim {

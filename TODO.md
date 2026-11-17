@@ -1,6 +1,5 @@
 # TODO
 
-PROBLEME DE PARSING EMOJI !§§§
 better private
 
 STARCORD

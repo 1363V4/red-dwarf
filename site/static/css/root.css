@@ -239,10 +239,14 @@ li {
 }
 
 pre[class*="language-"] {
-    white-space: pre-wrap;
     padding-inline: var(--s);
     margin-block: var(--m);
     @media (prefers-color-scheme: light) {
         filter: invert(1);
     }
+}
+
+code[class*="language-"] {
+    white-space: pre-wrap;
+    line-break: auto;
 }
