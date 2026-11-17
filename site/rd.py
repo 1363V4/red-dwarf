@@ -1,6 +1,6 @@
 # Red Dwarf
 # ---------
-# Version: 1.1.0
+# Version: 1.1.1
 # Author: Louis Sunshine
 # Permalink: https://github.com/1363V4/red-dwarf
 # Website: https://red.leg.ovh/
@@ -256,7 +256,7 @@ _NOT_FOUND = _plain_response(HTTPStatus.NOT_FOUND)
 _SERVER_ERROR = _plain_response(HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
-async def _write_response(writer, response, connection=None):
+async def _write_response(writer, response, keep_alive=False):
     body = (
         response.body.encode("utf-8")
         if isinstance(response.body, str)
@@ -264,12 +264,15 @@ async def _write_response(writer, response, connection=None):
     )
     header_buffer = [
         f"HTTP/1.1 {response.status.value} {response.status.phrase}",
-        f"Content-Length: {len(response.body)}",
+        f"Content-Length: {len(body)}",
     ]
     if response.content_type:
         header_buffer += [f"Content-Type: {response.content_type}"]
-    if connection:
-        header_buffer += [f"Connection: {connection}"]
+    if keep_alive:
+        header_buffer += ["Connection: keep-alive"]
+        header_buffer += [f"Keep-Alive: timeout={REQUEST_TIMEOUT - 1}"]
+    else:
+        header_buffer += ["Connection: close"]
     for header, value in response.headers.items():
         header_buffer += [f"{header}: {value}"]
     for cookie in response.cookies:
@@ -355,7 +358,9 @@ async def _handle(reader, writer):
         for _ in range(MAX_REQUESTS_PER_CONNECTION):
             try:
                 request = await _read_request(reader)
-            except (ValueError, TimeoutError):
+            except TimeoutError:
+                return
+            except ValueError:
                 await _write_response(writer, _BAD_REQUEST)
                 return
             if request is None:
@@ -382,8 +387,9 @@ async def _handle(reader, writer):
                             return
                         response = await result
 
-            connection = _should_keep_alive(request)
-            await _write_response(writer, response, connection=connection)
+            await _write_response(
+                writer, response, keep_alive=_should_keep_alive(request)
+            )
 
     except ConnectionError:  # client left
         return
