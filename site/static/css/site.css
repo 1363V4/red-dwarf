@@ -11,7 +11,7 @@
 }
 
 .gmb {
-    margin-bottom: var(--l);
+    margin-bottom: var(--m);
 }
 
 .tac {
@@ -52,18 +52,15 @@ ul[dense] {
 #title {
     /*background: linear-gradient(0deg, var(--code), var(--black));*/
     /*background-clip: text;*/
-    margin: 0;
+    font-family: "slkscr";
+    text-anchor: middle;
     background: var(--black);
     text-shadow: -10px 10px var(--code);
     filter: drop-shadow(Opx 2px 10px var(--white));
-    line-break: auto;
     transition: color 2s ease-in;
     cursor: default;
-    &:hover {
-        animation: shadow_anim 2s steps(16) infinite;
-        color: var(--white);
-    }
-    word-break: break-all;
+    animation: shadow_anim 4s steps(16) infinite;
+    margin-bottom: var(--m);
 }
 
 @keyframes shadow_anim {

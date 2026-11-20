@@ -37,7 +37,7 @@
 }
 
 :root {
-    --m: 31px;
+    --m: 37px;
     --black: #070204;
     --white: #ffffffd6;
     --strong: #fff;
@@ -58,9 +58,9 @@
 }
 
 @media (width < 567px) {
-    :root {
+    /*:root {
         --m: 25px;
-    }
+    }*/
 }
 
 html {
@@ -161,7 +161,7 @@ header {
 }
 
 main {
-    padding-inline: var(--l);
+    padding-inline: var(--s);
     max-width: 1024px;
     place-self: center;
 }
